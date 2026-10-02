@@ -1,0 +1,160 @@
+# Plan de implementación y estado
+
+Actualizado: 2026-10-01. Referencia: [SDD](SDD.md). Las fases P0–P7 se ejecutaron en esa fecha; el estado por requisito es el de la tabla (ninguno cerrado: iOS y varias pruebas de dispositivo siguen pendientes).
+
+## Estado real por requisito
+
+| ID | Base 0.1 existente | Pendiente para cerrar 1.0 | Estado 1.0 |
+| --- | --- | --- | --- |
+| F00 | SQLite/Drift, importación única del snapshot v1, transacciones por diff, pantalla de arranque con recuperación (P1) | iOS (requiere macOS); actualización con datos más extensos | Implementado y verificado en host (Windows) y en Android real (actualización 0.1→P1); **no cerrado** (iOS pendiente) |
+| F01 | Onboarding por pasos (experiencia, objetivo, tres días, equipo, duración, energía, datos opcionales), saltar/retomar, peso y edad opcionales, historial de respuestas, perfil editable que propone borrador (P2) | Revisión mensual (F07); verificación en iOS | Implementado y verificado en host; **no cerrado** |
+| F02 | Plan versionado (borrador → aceptar con vigencia, sin tocar sesiones pasadas), generador local determinista, editor (nombres, días, orden, series/reps/RIR/descanso/peso de referencia, alternativas), plan de ejemplo identificado (P2) | Plantillas más ricas (fuera de 1.0); verificación en iOS | Implementado y verificado en host; **no cerrado** |
+| F03 | Panel de series (calentamiento/trabajo, carga/reps/RIR opcionales, omitir serie/ejercicio con motivo), completar exige resolver todo, reapertura confirmada y auditada, descanso opcional por marcas de tiempo, kg/lb (P3) | Reutilizar el servicio de tiempo en cardio (F10); verificación en iOS | Implementado y verificado en host y parcialmente en teléfono; **no cerrado** |
+| F04 | Check-in antes/después, ajuste reversible por día solo sobre pendientes, lesión pausa y sin ajuste (P3) | Bloquear aumentos por lesión en el motor de progresión (F08); iOS | Implementado y verificado en host; **no cerrado** |
+| F05 | Vista previa con avisos, fecha manual sin desplazar sesiones, guardar sin mover, deshacer mientras el destino no empiece, linaje sin ciclos, transacción única (P3) | Estadísticas sin doble conteo origen/destino (F09); comprobación en teléfono de reprogramar/deshacer; iOS | Implementado y verificado en host; **no cerrado** |
+| F06 | 39 ejercicios con equipo, patrón, calentamiento y técnica; búsqueda sin acentos, filtros por músculo/equipo/"solo mi equipo", alternativas compatibles, archivado seguro; tutorial como búsqueda identificada con reintento/copiar (P2) | Enlaces Short verificados (ninguno se incluye hasta comprobarlo); verificación en iOS | Implementado y verificado en host; **no cerrado** |
+| F07 | Revisión cada 30 días con reloj inyectable, posponer 7 días, respuestas, propuesta explicada con comparación de planes, aceptar/rechazar, historial con versión de reglas, sin aumentos con dolor/fatiga (P4) | Verificación en iOS; revisar el contenido de las reglas antes de release | Implementado y verificado en host; **no cerrado** |
+| F08 | Motor `prog-v1` por ejercicio con series reales y técnica, tabla de decisiones con fixtures, explicación, aceptar/rechazar idempotente y aplicado solo a sesiones futuras (P4) | Cardio (sugerir revisar duración, tras F10); explicación en lb; iOS; revisar contenido de reglas antes de release | Implementado y verificado en host; **no cerrado** |
+| F09 | Cumplimiento con denominador y política, volumen externo real con cobertura, evolución/marcas observadas, gráfica monocroma con tabla, rangos, historial con series (P4) | Cardio y nutrición en vistas separadas (F10/F12); iOS | Implementado y verificado en host y parcialmente en teléfono; **no cerrado** |
+| F10 | Sesión persistente con tramos (intensidad/peso por tramo), tiempo reconstruido de marcas de hora, reloj monotónico en proceso, detección de reloj retrocedido/sesión excesiva con corrección, finalizar una vez, descartar con confirmación, historial, `ElapsedTimer`/`RestTimer` reutilizados en el descanso (P5) | Prueba de dispositivo del ciclo de vida de cardio (bloqueo, segundo plano largo, cambio de hora); revisar la tabla MET contra la fuente; iOS | Implementado y verificado en host; migración v5 verificada en teléfono; **no cerrado** |
+| F11 | Servicio de notificaciones locales (permiso real separado del deseo, ventana de 28 días, reconciliación, cancelación, ids estables, tap abre el día) (P5) | iOS completo (autorización, 64 pendientes); alarmas vencidas durante un apagado | Implementado; verificado en host con falso y en Android real (permiso, programación, entrega, tap en caliente y en frío); **no cerrado** |
+| F12 | Porción/unidad y macros opcionales, kcal manuales o calculadas con origen visible, historial por día, edición atómica, deshacer, favoritos, recetas (porciones fraccionarias, totales con datos completos), etiquetas/alérgenos declarados, objetivos manuales, cobertura de macros (P6) | Prueba en dispositivo de los formularios; plantillas/contenido de recetas con licencia (fuera de 1.0); iOS | Implementado y verificado en host; migración v6 verificada en teléfono; **no cerrado** |
+| F13 | Exportar JSON versionado con SHA-256, importar en modo reemplazo con vista previa/validación/copia previa/transacción, eliminar todo, texto de privacidad (P6) | Exportar/importar con el selector de archivos del sistema en Android e iOS, ida y vuelta entre plataformas, exclusión de copias del SO en iOS | Implementado y verificado en host con SQLite real; **no cerrado** (selector nativo y flujo completo verificados en Android real; falta iOS) |
+| F15 | Racha de entrenos `streak-v1` con llama naranja en la barra superior, calendario mensual, mapa de calor anual y tabla (D36, 2026-10-02) | Revisar las reglas con una persona antes de publicar | Implementado y verificado en host (712 pruebas) y en el teléfono; **no cerrado** |
+| F14 | Tema conservado; diseño adaptable a teléfono/tablet en vertical y horizontal con barra inferior en vertical y riel lateral con la misma gota en horizontal (D33, 2026-10-02, 672 pruebas); contraste WCAG y guías de accesibilidad de Flutter probadas en todas las pantallas y paneles; icono adaptativo, arranque, icono de notificación, licencias, firma de release fuera del repo (un release sin clave se rechaza), R8 y CI definido (P7) | CI ejecutado en un runner, iOS (compilación, firma, VoiceOver), TalkBack, perfil de rendimiento y smoke en dispositivo, instalar y recorrer flujos críticos en iOS | Implementado y verificado en host; release Android compilado y arrancado 10 s en teléfono; **no cerrado** |
+
+No hay requisitos 1.0 cerrados. F00–F14 están **implementados y verificados en host** (Windows) con pruebas automáticas, y partes de F00, F03, F11 y la migración de cada esquema también en un Android real, pero el gate de iOS (compilación, notificaciones, selector de archivos, VoiceOver) y varias pruebas de dispositivo siguen pendientes. Evidencia en VALIDACION.
+
+## Paquetes de trabajo
+
+### P0 · Entorno y línea base
+
+- Inspeccionar SDK/lockfiles y ejecutar analyze + 16 tests existentes en nueva ruta.
+- Resolver `android/local.properties` si apunta a otro ordenador; no versionar rutas.
+- Reproducir build Android en entorno con caché accesible; guardar primer error útil. macOS/Xcode necesario para iOS.
+- Inicializar Git local si el usuario lo pide; la carpeta movida no incluye el `.git` del prototipo original.
+- Evidencia: versiones, comandos, plataforma y commit si existe. Sin alterar cache global ni borrar datos de usuario para obtener verde.
+
+**Estado (2026-09-30):** ejecutada en lo verificable (format/analyze/16 tests/APK debug correctos; detalles en VALIDACION). Instalación y smoke en dispositivo pendientes: emulador Pixel 9a no llegó a `device` y no hay físico conectado. iOS pendiente de macOS. Git existe en la raíz sin commits; no se creó commit (no solicitado). `local.properties` ya apunta al SDK local y está ignorado por Git.
+
+### P1 · Datos locales duraderos (F00, base F13)
+
+- Diseñar/implementar DB Drift, contratos y repositorios conservando consumidores actuales.
+- Exportar schemas, migrador v1 JSON, fixtures de migración y pruebas de transacciones.
+- Añadir recuperación/exportación del snapshot inválido sin reset.
+- Termina cuando existe prueba de apertura/reapertura de DB real y snapshot v1 traducido fielmente.
+
+**Estado (2026-10-01):** implementado; verificado en host y en Android real (Redmi 2412DPC0AG, Android 16); ver VALIDACION y CONTEXTO. Pendiente: iOS. Exportación del original a archivo (no solo portapapeles) queda para F13.
+
+### P2 · Plan, biblioteca y perfil (F01, F02, F06)
+
+- Extender perfil, catálogo y plan versionado; editar y aceptar borrador.
+- Añadir filtros/alternativas/tutoriales curados con procedencia y validar catálogo.
+- Mantener UX compacta, pesos de ejemplo visibles y datos opcionales.
+- Termina con plan persistido y sesiones pasadas inmutables tras nueva versión.
+
+**Estado (2026-10-01):** implementado y verificado en host; ver VALIDACION y CONTEXTO.
+
+### P3 · Entrenamiento real (F03, F04, F05)
+
+- Registro de series real, omisiones, panel de detalle, feedback previo/posterior.
+- Reprogramación transaccional con preview, linaje y deshacer.
+- Regresión completa Hoy/foco/drag; pruebas reinicio/fallo/concurrencia.
+- Termina al realizar/completar/omitir y reprogramar sin pérdida ni duplicados.
+
+**Estado (2026-10-01):** implementado; verificado en host (314 pruebas) y, parcialmente, en Android real (migración v2→v3, panel de series, persistencia). Ver VALIDACION y CONTEXTO.
+
+### P4 · Progresión y coach (F07, F08, F09)
+
+- Motor puro de elegibilidad/decisión, reglas versionadas y fixtures auditables.
+- Revisión mensual con clock fake, explicación/comparación y aceptación explícita.
+- Estadísticas con volumen real y denominadores correctos; acceso tabular.
+- Termina cuando datos faltantes/legacy no producen progreso ficticio.
+
+**Estado (2026-10-01):** implementado; verificado en host (401 pruebas) y parcialmente en Android real (migración v3→v4 y pantalla Progreso). Ver VALIDACION y CONTEXTO.
+
+### P5 · Tiempo y notificaciones (F10, F11)
+
+- Historial cardio, segmentos, timer reconstruible y descanso reutilizable.
+- Adapter de notificaciones, permisos, jobs/reconciliación y tap frío/caliente.
+- Tests nativos Android e iOS, no sustituirlos con mocks/web.
+- Termina con evidencia móvil de persistencia/lifecycle y comportamiento de recordatorios.
+
+**Estado (2026-10-01):** implementado; verificado en host (481 pruebas) y, para F11, en Android real (ver VALIDACION). Pendientes: cardio en dispositivo, reinicio del teléfono/zona/DST, iOS.
+
+### P6 · Nutrición y respaldo (F12, F13)
+
+- Macros/porciones/recetas/objetivos manuales, datos desconocidos explícitos.
+- Formato backup versionado, checksum, importación/preview/rollback y borrado.
+- Probar ida/vuelta entre Android/iOS, cancelación y entradas inválidas.
+
+**Estado (2026-10-01):** implementado; verificado en host (599 pruebas al cerrar P6; 624 al cerrar P7) y la migración v6 en Android real. Formularios, selector de archivos, eliminación total y cardio recorridos en un Android real el 2026-10-01 (VALIDACION); 625 pruebas tras corregir 5 hallazgos. También ahorro de batería y horario de verano en dispositivo. Línea base de rendimiento medida en dispositivo (2026-10-02). El cambio de pestaña se corrigió y se midió en el teléfono (626 pruebas), y el 2026-10-02 se verificaron el reinicio del teléfono con recordatorios y el cardio con la pantalla bloqueada. Pendientes: iOS, TalkBack con una persona escuchando.
+
+### P7 · Cierre 1.0 (F14 y todos)
+
+- CI, builds, firma, assets nativos, smoke y rendimiento/accesibilidad de dispositivo.
+- Revisión de todos los criterios del SDD; corregir bugs y registrar regresiones.
+- Documentación coincide con capacidades reales. Publicación en tiendas solo con instrucción específica.
+
+**Estado (2026-10-01):** implementado en lo verificable en esta máquina; ver ENTREGA, VALIDACION y la sección «Pendiente real» de ALCANCE. **No es un cierre 1.0**: el SDD exige iOS y pruebas de dispositivo que no se pudieron ejecutar.
+
+## Registro de evidencia de implementación
+
+Cada unidad añadida debe registrar: fecha, ID/P, estado, archivos, criterios cubiertos, pruebas y resultados, plataforma/SDK, commit real o ausencia de Git, limitaciones y siguiente acción. `Implementado sin prueba nativa` no equivale a `cerrado`.
+
+| Fecha | Unidad | Cambio | Evidencia | Pendientes |
+| --- | --- | --- | --- | --- |
+| 2026-10-02 | F15 · racha | Reglas `streak-v1` puras, `StreakViewModel`, llama animada, insignia en la barra superior, página con mes, mapa anual y tabla | VALIDACION: format 0, analyze limpio, 712/712 (23 nuevas), mutaciones detectadas, capturas, teléfono | Revisión de reglas |
+| 2026-10-02 | F14 · barra de navegación | Reparto de los elementos por la longitud de su etiqueta (`NavBarLayout`), etiquetas en una línea, escala de texto hasta donde cabe, riel a 140 % | VALIDACION: format 0, analyze limpio, 689/689 (17 nuevas), mutación detectada; teléfono real | — |
+| 2026-10-02 | F14 · diseño adaptable | Shell sin columna fija, `DropletRail` en horizontal, `ResponsivePage`/`TwoColumns`/`ResponsiveGrid`, Hoy/Plan/Progreso/Cardio/Nutrición en dos columnas, Ejercicios en cuadrícula, paneles y editor más anchos | VALIDACION: format 0, analyze limpio, 672/672 (46 nuevas en 25 tamaños), mutaciones detectadas; teléfono real en horizontal y tablet simulada con `wm density` | Tablet física, iPad/iOS, TalkBack con lector real |
+| 2026-10-01 | P7 · F14 | Accesibilidad probada en todas las pantallas, iconos/arranque/notificación, licencias, firma de release y R8, CI, ENTREGA, barrido de documentación y versión 0.9.0 | VALIDACION: format 0, analyze limpio, pruebas completas, release Android compilado (66.3 MB) y arrancado en teléfono | iOS, CI sin ejecutar, pruebas de dispositivo pendientes; sin commit por decisión del usuario |
+| 2026-10-01 | P6 · F12, F13 | Esquema v6; nutrición con macros/favoritos/recetas/objetivos; copia de seguridad con checksum, importación por reemplazo y eliminación total | VALIDACION: format 0, analyze limpio, 599/599, mutaciones detectadas, APK debug, migración v6 en teléfono | Selector de archivos nativo y formularios en dispositivo (teléfono con bloqueo seguro), iOS; sin commit por decisión del usuario |
+| 2026-10-01 | P5 · F10, F11 | Cardio persistente por tramos con tiempo reconstruible; recordatorios nativos con ventana de 28 días y reconciliación | VALIDACION: format 0, analyze limpio, 481/481, mutaciones detectadas, APK debug; teléfono: permiso, programación, entrega del aviso programado, tap en caliente y en frío, revocación, migración v5 | Reinicio del teléfono, zona/DST, batería, cardio en dispositivo (bloqueado: teléfono con bloqueo seguro), tabla MET por revisar, iOS; sin commit por decisión del usuario |
+| 2026-10-01 | P4 · F07, F08, F09 | Esquema v4, motor de progresión, revisión mensual, estadísticas reales con tablas | VALIDACION: format 0, analyze limpio, 401/401, migración v3→v4 con datos, equivalencia aleatoria ampliada, APK debug y teléfono real (migración y pantalla Progreso) | Reglas por revisar antes de release; iOS; explicación de progresión en kg; sin commit por decisión del usuario |
+| 2026-10-01 | P3 · F03, F04, F05 | Esquema v3, series reales, omisiones, reapertura auditada, check-in antes/después, ajuste reversible, reprogramación con vista previa/deshacer/linaje, kg/lb | VALIDACION: format 0, analyze limpio, 314/314 pruebas (incl. migración v2→v3 con datos y equivalencia aleatoria memoria/SQLite con las órdenes nuevas), mutaciones detectadas, APK debug y teléfono real | iOS; reprogramar/deshacer en teléfono; sin commit por decisión del usuario |
+| 2026-10-01 | P1 · F00 | SQLite/Drift, importación única del snapshot 0.1, commit transaccional por diff, pantalla de arranque con recuperación; web eliminada | VALIDACION: format 0, analyze limpio, 107/107 pruebas, APK debug OK; mutaciones detectadas; actualización 0.1→P1 en teléfono físico (datos y perfil migrados, persistencia tras cierre, integrity_check ok) | iOS; datos extensos en dispositivo; archivo de exportación del original (F13); sin commit por decisión del usuario |
+| 2026-09-30 | P0 línea base | Sin cambios de código; baseline desde la raíz actual | VALIDACION: format 0/40, analyze limpio, 16/16 tests, APK debug compilada (778.5 s) | Instalación/smoke en dispositivo (emulador no operativo); iOS requiere macOS; commit no solicitado |
+| 2026-09-30 | Base 0.1 | Flutter MVVM y almacenamiento básico, movido a appGym | VALIDACION: analyze limpio, 16 tests y build web históricos | Android no compilado por acceso Gradle; iOS no probado |
+| 2026-09-30 | Documentación 1.0 | SDD, plan, testing, AGENTS, contexto y siete skills locales | Revisión de rutas, frontmatter y coherencia documental; detalles en CHANGELOG | Todas las ampliaciones funcionales siguen en la matriz anterior |
+
+## Decisiones mantenidas
+
+- D01: SQLite/Drift local para registros extensos; migrar sin perder JSON v1.
+- D02: reglas locales explicables, sin IA/backend.
+- D03: cambios de rutina/carga confirmados, historial congelado.
+- D04: nutrición manual y recetas; cálculo dietético clínico y catálogo externo fuera de 1.0.
+- D05: recordatorios locales con permiso real, sin necesidad de alarma exacta.
+- D06: backup manual reemplaza de forma transaccional; merge/sync fuera de 1.0.
+- D07: conservar tema/fuentes/navbar; detalles de series bajo demanda.
+- D08 (2026-10-01, usuario): se retira el soporte web. SQLite nativo no corre en navegador; se podría reintroducir con los assets WASM de Drift. Afecta a F14 (web ya no es preview opcional) y a README/TESTING/ALCANCE.
+- D09 (2026-10-01): catálogo de ejercicios, rutinas y plantilla semanal siguen en código hasta P2; P1 solo persiste datos del usuario. Desvío de SDD §3.2.2 (catálogo en tablas); P2 añadirá tablas y FK con migración. Las referencias se validan en Dart.
+- D10 (2026-10-01, usuario): si el snapshot 0.1 no se puede validar, la pantalla de arranque ofrece además "Continuar sin importar" con confirmación (marcador `skipped`, original intacto). Refina SDD §3.2.5 (sin reset silencioso): la decisión es explícita del usuario.
+- D11 (2026-10-01): el repositorio conserva el estado en memoria y el almacén escribe solo el diff (`ForjaStore.commit(previous, next)`) en una transacción; no hay consultas por pantalla en P1.
+- D12 (2026-10-01, usuario): no se hacen commits de Git en esta unidad.
+- D13 (2026-10-01, usuario: "termina todas las fases y avanza si el testing sale bien"): se autoriza ejecutar P2–P7 en secuencia, con las pruebas de cada fase como puerta. No autoriza publicar en tiendas, crear claves de producción ni cambiar servicios externos.
+- D14 (P2): el plan de ejemplo vive en código y nunca en la base; se aplica desde el principio de los tiempos hasta que se acepta un plan propio. Una versión aceptada es inmutable: editar crea un borrador con ids nuevos. Una sesión ya guardada conserva su rutina aunque llegue un plan nuevo.
+- D15 (P2): el plan de ejemplo sigue adaptándose al perfil como en 0.1 (principiante, objetivo); un plan aceptado se muestra tal cual salvo la sensación del día. Peso corporal y edad pasan a ser opcionales: los valores por defecto de la 0.1 en un perfil sin completar se importan/migran como desconocidos.
+- D16 (P2): el generador usa plantillas locales versionadas (cuerpo completo para principiantes, empuje/tirón/pierna para el resto) y siempre explica si no puede producir un plan.
+- D17 (P3): una sesión terminada (completada o parcial con omitidos) se reabre al editarla; la interfaz pide confirmación y el repositorio registra un `SessionEvent`. Una sesión parcial movida (día de descanso) no se edita.
+- D18 (P3): el ajuste por cansancio/DOMS/energía baja sigue aplicándose por defecto (como en 0.1) pero es reversible por fecha (`adjustments`: false = quitado). No toca ejercicios con trabajo registrado.
+- D19 (P3): una sesión "completada" con ejercicios omitidos se guarda como parcial sin reprogramar; "No terminé" mueve solo lo no resuelto. Las fechas de destino salen de huecos sin entrenamiento en 14 días (preferencia: descanso a ambos lados; si no, el primero con aviso); a mano hasta 60 días y nunca sobre otra sesión. Con 3 días por semana siempre hay hueco, así que "sin hueco" solo se cubre en el planificador y con "guardar sin reprogramar".
+- D20 (P3): los pesos se guardan siempre en kg sin redondear; kg/lb es una preferencia de visualización en el perfil que no crea historial.
+- D21 (P4): las decisiones de progresión se identifican por (ejercicio, fecha de la última sesión usada, versión de reglas); la primera decisión es definitiva. Aceptar un aumento crea una carga de trabajo (`workingWeight`) que solo afecta a sesiones nuevas; no edita versiones de plan ni sesiones guardadas.
+- D22 (P4): la técnica autoevaluada (sólida/inestable, opcional) es un dato nuevo por ejercicio y sesión; sin valorar cuenta como dato que falta, nunca como "sólida".
+- D23 (P4): una revisión aceptada guarda el perfil y un borrador de plan en una transacción; el plan en uso solo cambia cuando el borrador se acepta en Plan con su fecha de vigencia. Una revisión rechazada solo actualiza la fecha de revisión. Editar el perfil desde el minicoach sigue contando como revisar el perfil (reinicia la fecha) pero no crea una revisión.
+- D24 (P4): días planificados sin sesión guardada cuentan como "sin registro" solo desde la primera sesión guardada, para no penalizar fechas anteriores al uso de la app.
+- D25 (P5): el tiempo de cardio es la suma de tramos con marcas de hora UTC; no se cuenta con ticks. Las órdenes del repositorio reciben el instante (`at`) para que el reloj monotónico del proceso decida el cierre. Descartar borra la sesión (no se conserva rastro); finalizar ya terminada no hace nada.
+- D26 (P5): tabla MET `met-v1` con valores redondeados «en el espíritu» del Compendio de Actividades Físicas, **sin comprobar contra la fuente**: debe revisarse antes de release.
+- D27 (P5): recordatorios con `flutter_local_notifications` 22.3.1 (+ `timezone`, `flutter_timezone`); programación inexacta, ventana de 28 días, id = fecha (AAAAMMDD), payload `session:FECHA@HH:MM@ZONA` (un cambio de hora o de zona reprograma). Sin permiso no se programa nada y el deseo se conserva. Desvío de AGP: el plugin usa AGP 8.11.1 propio y el proyecto AGP 9.1; compiló sin cambios, `flutter_timezone` aplica KGP (aviso de Flutter, sin fallo).
+- D28 (P6): una entrada con calorías «desde macros» solo se acepta si las calorías coinciden con 4·P + 4·C + 9·G y los tres macros están; un número manual no se valida contra los macros (manda). Borrar una receta no reescribe lo ya registrado.
+- D29 (P6): el respaldo es un reemplazo completo (sin fusión, como pide el SDD). El archivo guarda `snapshot.toJson()` sin `schemaVersion` (de 0.1); el checksum cubre `{version, counts, data}` en JSON canónico (claves ordenadas), de modo que otra disposición del mismo archivo sigue siendo válida. Las copias previas viven en `<soporte>/backups` (últimas 3, nombre `forja-previo-AAAAMMDD-HHMMSS.json`); Android no las incluye en copias automáticas del SO (`allowBackup=false`). iOS: marcar la base como excluida de iCloud queda pendiente (requiere código nativo y macOS).
+- D30 (P6): eliminar todos los datos conserva el marcador de importación del 0.1 (si no, los datos del 0.1 se importarían otra vez) y borra también las copias previas.
+- D31 (P7): la versión pasa a `0.9.0+2` (candidata, no 1.0). Un release de Android sin `android/key.properties` se rechaza; `FORJA_ALLOW_DEBUG_SIGNING=1` solo permite una prueba local firmada con la clave de depuración. `allowBackup=false`.
+- D32 (P7): los iconos de interfaz usan el color de texto del tema por defecto (los de las tarjetas claras fijan su tinta): el color por defecto de Material era demasiado tenue sobre el fondo oscuro. La fecha de semana del Plan usa el estilo de título.
+
+- D33 (2026-10-02, usuario): la app se adapta a teléfonos y tablets en vertical y horizontal. En vertical se conserva la barra inferior con la gota (centrada, máx. 640 px en tablet); cuando la pantalla es más ancha que alta la navegación pasa a un riel lateral con la misma gota y animación (elegido por el usuario frente a «barra inferior siempre»). Matiza D07 («conservar navbar») y el invariante de AGENTS. Dos columnas desde 640 px de contenido × tamaño de texto; el teléfono vertical queda igual.
+- D36 (2026-10-02, usuario): racha de entrenos (F15). Cuenta los días de entrenamiento del plan (no una racha diaria: el plan tiene descansos); modo flexible (parcial o con actividad cuenta, una falta reprogramada no rompe); llama y número en la barra superior; vista anual como mapa de calor de 53 semanas. El naranja de la llama es la única excepción a la identidad monocromática y solo se usa en la llama y el mapa (contraste ≥ 3:1 donde se dibuja). Sin esquema nuevo: se calcula de las sesiones y reprogramaciones. El conteo empieza en el primer entreno o la primera falta marcada (un día guardado sin nada hecho no lo inicia, visto en el teléfono). La animación es finita (aparecer, crecer, tocar).
+- D35 (2026-10-02, usuario: «que se acomoden mejor los elementos del navbar»): los cinco elementos de la barra ya no miden un quinto fijo; parten iguales y solo crece el que no cabe (etiqueta + 18 px de separación si hay sitio, mínimo 12). Las etiquetas van siempre en una línea y siguen el tamaño de texto del sistema solo hasta donde caben (en el riel, hasta 140 %); el lector de pantalla anuncia la etiqueta completa. Se acepta este tope como excepción al crecimiento del texto: antes las etiquetas se partían en sílabas.
+- D34 (2026-10-02, usuario): iOS y TalkBack con lector real se dejan para después; siguen pendientes y no se marcan como verificados.
+
+Si cambia una decisión, indicar razón, instrucción del usuario y criterios afectados antes de marcar cierre.

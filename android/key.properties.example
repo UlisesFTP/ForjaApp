@@ -1,0 +1,6 @@
+# Copy to android/key.properties (ignored by Git) and fill it in. Keep the
+# keystore OUTSIDE the repository. Never commit the real file or the keystore.
+storeFile=../../../secrets/forja-release.jks
+storePassword=
+keyAlias=forja
+keyPassword=

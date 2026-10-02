@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "profile": {
+    "experience": "advanced",
+    "goal": "muscle",
+    "weightKg": 82.5,
+    "age": 34,
+    "energy": "low",
+    "note": "Hombro derecho sensible; evitar press por encima de la cabeza.",
+    "onboarded": true,
+    "lastReview": "2026-09-01"
+  },
+  "reminder": {"enabled": true, "hour": 19, "minute": 30},
+  "sessions": {
+    "2026-09-29": {
+      "dateKey": "2026-09-29",
+      "routineId": "legs",
+      "exercises": [
+        {"exerciseId": "rdl", "weightKg": 32.5, "completed": true},
+        {"exerciseId": "squat", "weightKg": 52.5, "completed": true},
+        {"exerciseId": "press", "weightKg": 80.0, "completed": false}
+      ],
+      "status": "partial",
+      "feeling": null,
+      "note": ""
+    },
+    "2026-09-30": {
+      "dateKey": "2026-09-30",
+      "routineId": "legs",
+      "exercises": [
+        {"exerciseId": "press", "weightKg": 87.5, "completed": false}
+      ],
+      "status": "scheduled",
+      "feeling": null,
+      "note": ""
+    },
+    "2026-10-01": {
+      "dateKey": "2026-10-01",
+      "routineId": "push",
+      "exercises": [
+        {"exerciseId": "bench", "weightKg": 67.25, "completed": true},
+        {"exerciseId": "shoulder", "weightKg": 10.0, "completed": true},
+        {"exerciseId": "triceps", "weightKg": 15.0, "completed": true}
+      ],
+      "status": "completed",
+      "feeling": "energetic",
+      "note": "Mantener técnica"
+    },
+    "2026-10-03": {
+      "dateKey": "2026-10-03",
+      "routineId": "pull",
+      "exercises": [
+        {"exerciseId": "row", "weightKg": 30.0, "completed": false},
+        {"exerciseId": "pulldown", "weightKg": 25.0, "completed": false},
+        {"exerciseId": "curl", "weightKg": 8.0, "completed": false}
+      ],
+      "status": "missed",
+      "feeling": null,
+      "note": ""
+    },
+    "2026-10-04": {
+      "dateKey": "2026-10-04",
+      "routineId": "pull",
+      "exercises": [
+        {"exerciseId": "curl", "weightKg": 8.0, "completed": false},
+        {"exerciseId": "row", "weightKg": 30.0, "completed": false},
+        {"exerciseId": "pulldown", "weightKg": 25.0, "completed": false}
+      ],
+      "status": "scheduled",
+      "feeling": null,
+      "note": ""
+    }
+  },
+  "overrides": {
+    "2026-09-29": null,
+    "2026-09-30": "legs",
+    "2026-10-03": null,
+    "2026-10-04": "pull"
+  },
+  "checkIns": {
+    "2026-09-29": {"feeling": "tired", "note": "Dormí poco; rodilla algo cargada."},
+    "2026-10-01": {"feeling": "doms", "note": ""}
+  },
+  "food": [
+    {"id": "1759143600000001", "dateKey": "2026-09-29", "name": "Desayuno", "calories": 420},
+    {"id": "1759150800000002", "dateKey": "2026-09-29", "name": "Pollo con arroz y ensalada", "calories": 650},
+    {"id": "1759237200000003", "dateKey": "2026-09-30", "name": "Café con leche ☕", "calories": 120}
+  ]
+}

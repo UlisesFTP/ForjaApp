@@ -1,0 +1,11 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # ISO-8601 text for dates; changing this later needs a migration.
+          store_date_time_values_as_text: true
+          databases:
+            forja: lib/data/database/forja_database.dart
+          schema_dir: drift_schemas/
+          test_dir: test/drift/
