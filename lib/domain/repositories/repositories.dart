@@ -118,6 +118,31 @@ abstract class ProgressionRepository implements Listenable {
   });
 }
 
+/// What the person did with the expert system's recommendations (F16).
+abstract class CoachRepository implements Listenable {
+  /// Accepted and dismissed recommendations, oldest first.
+  List<CoachDecision> get coachDecisions;
+
+  /// Families of advice silenced (or let back), in the order first set.
+  List<CoachPreference> get coachPreferences;
+
+  /// Records a decision about a recommendation (`ruleId|subject|anchor`).
+  /// The rule must exist. Accepting is final: accepting the same
+  /// recommendation again does nothing. "Ahora no" can be recorded again
+  /// later, since it only hides it for a while.
+  Future<void> decideCoach({
+    required String ruleId,
+    required String subject,
+    required String anchor,
+    required String kbVersion,
+    required CoachDecisionStatus status,
+    String summary = '',
+  });
+
+  /// Silences a family of advice, or lets it back.
+  Future<void> setCoachMuted(String family, bool muted);
+}
+
 abstract class CardioRepository implements Listenable {
   /// The running or paused session, if any.
   CardioSession? get activeCardio;

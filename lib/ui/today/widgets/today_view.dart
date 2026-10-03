@@ -150,7 +150,7 @@ class TodayView extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleLarge,
               ),
               Text(
-                '${vm.entries.length} ejercicios · 45–60 min · ${vm.completed}/${vm.entries.length}${vm.skipped > 0 ? ' · ${vm.skipped} omitido${vm.skipped == 1 ? '' : 's'}' : ''}',
+                '${vm.entries.length} ejercicios · ≈ ${vm.routineMinutes} min · ${vm.completed}/${vm.entries.length}${vm.skipped > 0 ? ' · ${vm.skipped} omitido${vm.skipped == 1 ? '' : 's'}' : ''}',
               ),
             ],
           ),

@@ -371,8 +371,42 @@ class FoodFavorites extends Table {
   RealColumn get proteinG => real().nullable()();
   RealColumn get carbsG => real().nullable()();
   RealColumn get fatG => real().nullable()();
+  // Schema 7: favorites keep where their calories came from (D40).
+  TextColumn get caloriesSource =>
+      textEnum<CaloriesSource>().withDefault(const Constant('manual'))();
   @override
   Set<Column> get primaryKey => {id};
+}
+
+/// What the person did with the expert system's recommendations (schema 7,
+/// D40). Append-only; accepting is final per [recKey] (checked by the
+/// repository, since "Ahora no" can repeat).
+@DataClassName('CoachDecisionRow')
+class CoachDecisions extends Table {
+  TextColumn get id => text()();
+  IntColumn get seq => integer().unique()();
+  TextColumn get recKey => text()();
+  TextColumn get ruleId => text()();
+  TextColumn get kbVersion => text()();
+  TextColumn get subject => text()();
+  TextColumn get anchor => text()();
+  TextColumn get status => textEnum<CoachDecisionStatus>()();
+  DateTimeColumn get decidedAt => dateTime()();
+  TextColumn get summary => text()();
+  @override
+  Set<Column> get primaryKey => {id};
+}
+
+/// Families of advice the person silenced (schema 7). [seq] keeps the order
+/// they were first set.
+@DataClassName('CoachPreferenceRow')
+class CoachPreferences extends Table {
+  TextColumn get family => text()();
+  IntColumn get seq => integer().unique()();
+  BoolColumn get muted => boolean()();
+  DateTimeColumn get updatedAt => dateTime()();
+  @override
+  Set<Column> get primaryKey => {family};
 }
 
 /// [tags] and [allergens] are JSON lists; a null [allergens] means "not

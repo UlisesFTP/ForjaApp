@@ -158,7 +158,12 @@ class BackupService {
     required this.files,
     required this.schema,
     DateTime Function()? clock,
+    this.forgetOutsideDatabase,
   }) : _clock = clock ?? DateTime.now;
+
+  /// Deletes what lives outside the database (the assistant's key and
+  /// settings, D38), as part of deleting everything.
+  final Future<void> Function()? forgetOutsideDatabase;
   final LocalForjaRepository repository;
   final BackupCodec codec;
   final BackupVault vault;
@@ -209,5 +214,6 @@ class BackupService {
   Future<void> deleteEverything() async {
     await repository.replaceAll(AppSnapshot());
     await vault.deleteAll();
+    await forgetOutsideDatabase?.call();
   }
 }

@@ -72,7 +72,7 @@ class _GoalsFormState extends State<_GoalsForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           const Text(
-            'Opcionales y tuyos: la app no calcula objetivos ni da consejos si no pones ninguno. Vacío significa "sin objetivo".',
+            'Opcionales y tuyos: la app no calcula objetivos ni dietas. Sin objetivo, el minicoach solo muestra referencias generales no clínicas. Vacío significa "sin objetivo".',
           ),
           const SizedBox(height: 12),
           TextFormField(

@@ -1,7 +1,10 @@
 import '../models/models.dart';
 
-/// Version of the progression rules, stored with every decision.
-const progressionRulesVersion = 'prog-v1';
+/// Version of the progression rules, stored with every decision. `prog-v2`
+/// (D41a): the same rules, compared on the example plan with the adapted
+/// prescription the screen shows. A decision taken under `prog-v1` still
+/// stands for its suggestion (matched by exercise and date).
+const progressionRulesVersion = 'prog-v2';
 
 /// One session in which an exercise was done: the log plus how the person
 /// said they felt before training that day.

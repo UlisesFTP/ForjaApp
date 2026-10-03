@@ -41,7 +41,7 @@ class DataPanel extends StatelessWidget {
         children: [
           const SurfaceCard(
             child: Text(
-              'Tus datos viven solo en este teléfono, en una carpeta privada de la app. FORJA no usa cuenta, no envía nada por Internet y no hace copias automáticas. La base de datos no está cifrada: protege el teléfono con su bloqueo.',
+              'Tus datos viven solo en este teléfono, en una carpeta privada de la app. FORJA no usa cuenta y, sin el asistente IA opcional, no envía nada por Internet ni hace copias automáticas. Si activas el asistente, solo envía a tu proveedor lo que consulta cuando le preguntas (cada respuesta lo muestra); nunca tus copias ni tu clave. La base de datos no está cifrada: protege el teléfono con su bloqueo.',
             ),
           ),
           const SizedBox(height: 16),
@@ -231,7 +231,7 @@ class _DeleteDialogState extends State<_DeleteDialog> {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Se borran el perfil, los planes, las sesiones, el cardio, la nutrición y las copias previas de la app. No se puede deshacer. Escribe BORRAR para confirmar.',
+            'Se borran el perfil, los planes, las sesiones, el cardio, la nutrición, las copias previas de la app y la clave y los ajustes del asistente IA. No se puede deshacer. Escribe BORRAR para confirmar.',
           ),
           TextField(
             key: const ValueKey('delete-confirm-text'),

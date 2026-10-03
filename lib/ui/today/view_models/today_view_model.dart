@@ -1,8 +1,10 @@
 import '../../../core/date_utils.dart';
 import '../../../core/elapsed_timer.dart';
+import '../../../domain/expert/today_advice.dart';
 import '../../../domain/models/models.dart';
 import '../../../domain/repositories/repositories.dart';
 import '../../../domain/services/reschedule_planner.dart';
+import '../../../domain/services/plan_generator.dart';
 import '../../../domain/services/review_service.dart';
 import '../../../domain/services/training_rules.dart';
 import '../../core/view_model.dart';
@@ -58,23 +60,43 @@ class TodayViewModel extends ViewModel {
   bool get _adapts =>
       _workouts.planFor(selectedDate).source == PlanSource.example;
 
-  /// Tiredness or soreness today: the lighter session is proposed, and stands
+  /// Tiredness or soreness today (or a low habitual energy the plan does not
+  /// already account for, D41b): the lighter session is proposed, and stands
   /// until the person reverts it.
-  bool get adjustmentProposed =>
-      routine != null &&
-      TrainingRules.needsLighterSession(_profiles.profile, checkIn?.feeling);
+  bool get adjustmentProposed => routine != null && _lighter;
+  bool get _lighter => TrainingRules.lighterSessionProposed(
+    _profiles.profile,
+    checkIn?.feeling,
+    routine: routine,
+    source: _workouts.planFor(selectedDate).source,
+  );
   bool get adjustmentApplied =>
       adjustmentProposed && _workouts.adjustmentOn(selectedDate) != false;
   bool get injured => checkIn?.feeling == Feeling.injured;
 
   /// The monthly review is available; shown discreetly, never blocking.
   bool get reviewDue => ReviewService.status(_profiles.profile, today).due;
-  String? get recommendation => TrainingRules.recommendation(
-    _profiles.profile,
-    checkIn?.feeling,
+
+  /// The advice line: the rules' text and, back after a break, what to do
+  /// in the first sessions (D41e). The same function feeds the minicoach.
+  String? get recommendation => todayAdvice(
+    profile: _profiles.profile,
+    feeling: checkIn?.feeling,
     adaptToProfile: _adapts,
     adjust: adjustmentApplied,
+    lighter: _lighter,
+    trainingDay: isToday && routine != null,
+    daysSinceLastWorkout: daysSinceLastWorkout(_workouts.history, today),
+    startedToday: entries.any((e) => e.resolved || e.sets.isNotEmpty),
   );
+
+  /// Rough length of the day's routine (warm-up, work and rest), instead of
+  /// a fixed range (D41d). Null on a rest day.
+  int? get routineMinutes {
+    final r = routine;
+    return r == null ? null : PlanGenerator.routineMinutes(r, exercise);
+  }
+
   Routine? routineOn(DateTime date) => _workouts.routineOn(date);
   SessionStatus? statusOn(DateTime date) => _workouts.sessionOn(date)?.status;
   Exercise exercise(String id) => _catalog.exerciseById(id);

@@ -1,6 +1,6 @@
 # Entrega móvil: identificadores, firma, permisos y dependencias
 
-Estado a **2026-10-01**. Este documento describe cómo se construye y qué lleva la app; no concede permiso para publicar en tiendas. Nada de lo que sigue se ha subido a ninguna tienda.
+Estado a **2026-10-02** (asistente IA opcional, D38). Este documento describe cómo se construye y qué lleva la app; no concede permiso para publicar en tiendas. Nada de lo que sigue se ha subido a ninguna tienda.
 
 ## Identificadores y versión
 
@@ -27,8 +27,9 @@ Estado a **2026-10-01**. Este documento describe cómo se construye y qué lleva
 | `POST_NOTIFICATIONS` | Recordatorios locales | Se pide al activar recordatorios; el estado real del sistema se muestra aparte del deseo |
 | `RECEIVE_BOOT_COMPLETED` | Reprogramar recordatorios tras reiniciar o actualizar | Receptor del plugin |
 | `VIBRATE` | Notificaciones | Lo añade el plugin |
+| `INTERNET` | Solo el asistente IA opcional (D38, F17) | Desactivado por defecto: nada sale hasta que la persona lo activa, acepta el consentimiento y pregunta algo. Los tutoriales se abren en el navegador/YouTube del teléfono |
 
-Sin alarmas exactas, sin Internet declarado explícitamente (abrir un tutorial usa el navegador/YouTube del teléfono), sin ubicación, contactos ni cámara. `android:allowBackup="false"`: los datos no entran en las copias automáticas del sistema; la copia es la exportación explícita (F13).
+Sin alarmas exactas, sin ubicación, contactos ni cámara (manifiesto fusionado del release comprobado el 2026-10-02). `android:allowBackup="false"` y `android:dataExtractionRules` (`res/xml/data_extraction_rules.xml`, excluye todos los dominios de la copia en la nube y de la transferencia entre dispositivos, Android 12+): los datos y la clave del asistente no salen por las copias del sistema; la copia es la exportación explícita (F13).
 
 ## Iconos y arranque
 
@@ -42,12 +43,14 @@ Sin alarmas exactas, sin Internet declarado explícitamente (abrir un tutorial u
 | flutter / flutter_localizations | SDK | BSD-3-Clause | Interfaz, localización |
 | drift, drift_flutter | 2.35.1 / 0.3.1 | MIT | Base SQLite |
 | path_provider | 2.1.6 | BSD-3-Clause | Carpeta privada de la app |
-| shared_preferences | 2.5.5 | BSD-3-Clause | Solo lectura del JSON 0.1 para importarlo una vez |
+| shared_preferences | 2.5.5 | BSD-3-Clause | Lectura del JSON 0.1 para importarlo una vez, y los ajustes no críticos del asistente opcional (`forja.ai.*`, nunca la clave) |
 | url_launcher | 6.3.2 | BSD-3-Clause | Abrir tutoriales |
 | flutter_local_notifications | 22.3.1 | BSD-3-Clause | Recordatorios locales |
 | timezone, flutter_timezone | 0.11.1 / 5.1.0 | BSD-3-Clause / Apache-2.0 | Hora local y zona |
 | crypto | 3.0.7 | BSD-3-Clause | SHA-256 del respaldo |
 | file_picker | 13.1.0 | MIT | Elegir/guardar el archivo de respaldo |
+| flutter_secure_storage | 11.2.0 | BSD-3-Clause | Clave API del asistente opcional, solo en el almacenamiento seguro del sistema (D38) |
+| http | 1.6.0 | BSD-3-Clause | Peticiones del asistente opcional (ya venía como dependencia transitiva de `timezone`) |
 | cupertino_icons | 1.0.9 | MIT | Iconos |
 
 Desarrollo: `drift_dev`, `build_runner`, `flutter_lints`, `shared_preferences_platform_interface`. Fuentes: DM Sans y Barlow Condensed (SIL OFL 1.1, licencias en `assets/fonts/`). `sqlite3` llega por Drift con hooks nativos (SQLite de dominio público). Las licencias se comprobaron por la primera cabecera de cada paquete en la caché de pub; antes de publicar hay que generar el aviso de licencias completo (`showLicensePage` de Flutter ya lo expone con las transitivas).

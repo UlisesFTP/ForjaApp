@@ -11,6 +11,7 @@ import 'generated/schema_v3.dart' as v3;
 import 'generated/schema_v4.dart' as v4;
 import 'generated/schema_v5.dart' as v5;
 import 'generated/schema_v6.dart' as v6;
+import 'generated/schema_v7.dart' as v7;
 
 const stamp = '2026-09-30T12:00:00.000Z';
 
@@ -542,6 +543,96 @@ void main() {
               .customSelect('SELECT COUNT(*) AS n FROM recipe_ingredients')
               .getSingle();
           expect(left.read<int>('n'), 0);
+        },
+      );
+    });
+  });
+
+  group('v6 to v7 keeps favorites and decisions and adds the coach (D40)', () {
+    test('favorites stay manual numbers; coach tables start empty', () async {
+      await verifier.testWithDataIntegrity(
+        oldVersion: 6,
+        newVersion: 7,
+        createOld: v6.DatabaseAtV6.new,
+        createNew: v7.DatabaseAtV7.new,
+        openTestedDatabase: ForjaDatabase.new,
+        createItems: (batch, oldDb) {
+          batch.insert(
+            oldDb.foodFavorites,
+            const v6.FoodFavoritesData(
+              id: 'fav1',
+              seq: 1,
+              name: 'Yogur natural',
+              calories: 90,
+              proteinG: 5,
+            ),
+          );
+          batch.insert(
+            oldDb.foodFavorites,
+            const v6.FoodFavoritesData(
+              id: 'fav2',
+              seq: 2,
+              name: 'Café ☕',
+              calories: 20,
+            ),
+          );
+          batch.insert(
+            oldDb.foodEntries,
+            const v6.FoodEntriesData(
+              id: 'f1',
+              seq: 1,
+              dateKey: '2026-10-01',
+              name: 'Arroz',
+              calories: 350,
+              createdAt: stamp,
+              caloriesSource: 'macros',
+              proteinG: 7,
+              carbsG: 77,
+              fatG: 1,
+            ),
+          );
+          batch.insert(
+            oldDb.progressionDecisions,
+            const v6.ProgressionDecisionsData(
+              id: 'd1',
+              seq: 1,
+              exerciseId: 'squat',
+              ruleVersion: 'prog-v1',
+              kind: 'increase',
+              basedOn: '2026-09-29',
+              status: 'accepted',
+              decidedAt: stamp,
+              fromKg: 60,
+              toKg: 62.5,
+            ),
+          );
+        },
+        validateItems: (db) async {
+          final favorites = await (db.select(
+            db.foodFavorites,
+          )..orderBy([(t) => OrderingTerm.asc(t.seq)])).get();
+          expect(favorites.map((f) => f.name), ['Yogur natural', 'Café ☕']);
+          expect(favorites.map((f) => f.calories), [90, 20]);
+          expect(favorites.first.proteinG, 5);
+          expect(favorites.last.proteinG, isNull, reason: 'unknown, not 0');
+          // Nothing saved before is turned into an estimate.
+          expect(favorites.map((f) => f.caloriesSource), ['manual', 'manual']);
+          final food = await db.select(db.foodEntries).getSingle();
+          expect(
+            [food.name, food.calories, food.caloriesSource],
+            ['Arroz', 350, 'macros'],
+          );
+          final decision = await db.select(db.progressionDecisions).getSingle();
+          expect(
+            [decision.exerciseId, decision.ruleVersion, decision.toKg],
+            ['squat', 'prog-v1', 62.5],
+          );
+          for (final table in ['coach_decisions', 'coach_preferences']) {
+            final n = await db
+                .customSelect('SELECT COUNT(*) AS n FROM $table')
+                .getSingle();
+            expect(n.read<int>('n'), 0, reason: table);
+          }
         },
       );
     });

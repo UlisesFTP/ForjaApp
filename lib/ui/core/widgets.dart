@@ -107,7 +107,7 @@ class PageHeading extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: Theme.of(context).textTheme.headlineLarge),
+              _FittedHeading(title),
               if (subtitle != null)
                 Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium),
             ],
@@ -117,6 +117,45 @@ class PageHeading extends StatelessWidget {
       ],
     ),
   );
+}
+
+/// A page title that wraps between words but never inside one: when its
+/// longest word is wider than the line (320 px with large text: "EJERCICIOS"
+/// broke into "EJERCICI/OS"), the size goes down just enough for it to fit.
+class _FittedHeading extends StatelessWidget {
+  const _FittedHeading(this.title);
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    final style = Theme.of(context).textTheme.headlineLarge!;
+    final scaler = MediaQuery.textScalerOf(context);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        var widest = 0.0;
+        for (final word in title.split(RegExp(r'\s+'))) {
+          final painter = TextPainter(
+            text: TextSpan(text: word, style: style),
+            textScaler: scaler,
+            textDirection: TextDirection.ltr,
+            maxLines: 1,
+          )..layout();
+          if (painter.width > widest) widest = painter.width;
+          painter.dispose();
+        }
+        final fits = widest <= constraints.maxWidth || style.fontSize == null;
+        return Text(
+          title,
+          style: fits
+              ? style
+              : style.copyWith(
+                  fontSize:
+                      style.fontSize! * constraints.maxWidth / widest * 0.98,
+                ),
+        );
+      },
+    );
+  }
 }
 
 class QuickRow extends StatelessWidget {

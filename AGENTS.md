@@ -20,9 +20,9 @@ El SDD es la referencia técnica del producto. Las instrucciones directas del us
 - No sustituir arquitectura/gestor de estado ni actualizar dependencias indiscriminadamente. Justificar el cambio que necesita una feature.
 - Guardar de forma atómica antes de comunicar éxito. Evitar doble envío, pérdida de cambios y corrupción. Cada cambio de esquema requiere migración y pruebas con datos anteriores.
 - No inventar series, repeticiones ni RIR reales a partir de pesos antiguos. No reescribir sesiones históricas al modificar planes.
-- Mantener recuperación ante fallo, controles accesibles y funcionamiento sin Internet. No subir perfiles, notas, backups ni telemetría.
-- Recomendaciones explicables y editables; lesión bloquea recomendaciones de aumento. No presentar el coach como diagnóstico o IA remota.
-- Nunca guardar claves de firma, tokens, datos personales reales ni rutas de SDK de una máquina en archivos compartidos.
+- Mantener recuperación ante fallo, controles accesibles y funcionamiento completo sin Internet. No subir perfiles, notas, backups ni telemetría. Única excepción: el asistente IA opcional (D38, F17), desactivado por defecto, con la clave de la propia persona y su consentimiento por categorías; envía solo lo que muestra su traza y nunca backups ni la clave. Ninguna llamada de red sin una petición explícita de la persona.
+- Recomendaciones explicables y editables; lesión bloquea recomendaciones de aumento, también las propuestas del asistente IA. El minicoach y el sistema experto (`expert-v1`, F16) son locales y no se presentan como diagnóstico ni como IA; el asistente externo se etiqueta siempre «Asistente externo (IA)» y «No es un diagnóstico», solo propone y nunca guarda sin confirmación.
+- Nunca guardar claves de firma, claves API, tokens, datos personales reales ni rutas de SDK de una máquina en archivos compartidos. La clave del asistente se escribe solo en el teléfono y vive en su almacenamiento seguro.
 
 ## Skills
 

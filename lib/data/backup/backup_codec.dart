@@ -4,13 +4,16 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../../core/date_utils.dart';
+import '../../domain/expert/model/recommendation.dart' show RuleFamily;
 import '../../domain/models/models.dart';
 import '../../domain/services/plan_validator.dart';
 import '../services/snapshot_diff.dart' show canonicalJson;
 
-/// The backup file format. Version 1 is the first one.
+/// The backup file format. Version 2 (schema 7, D40) adds the coach's
+/// decisions and preferences, the source of a favorite's calories and the
+/// `estimated` source; version 1 files are still read.
 const backupFormat = 'forja-backup';
-const backupVersion = 1;
+const backupVersion = 2;
 
 /// Largest file that is read (20 MiB), checked before anything is parsed.
 const backupMaxBytes = 20 * 1024 * 1024;
@@ -66,7 +69,12 @@ class BackupCodec {
   BackupCodec({required this.isKnownExercise});
   final bool Function(String exerciseId) isKnownExercise;
 
-  static Map<String, int> countsOf(AppSnapshot s) => {
+  /// What a file of [version] counts: version 1 had no coach sections, so
+  /// its counts are compared without them.
+  static Map<String, int> countsOf(
+    AppSnapshot s, {
+    int version = backupVersion,
+  }) => {
     'sessions': s.sessions.length,
     'exerciseLogs': s.sessions.values.fold(0, (n, x) => n + x.exercises.length),
     'sets': s.sessions.values.fold(
@@ -84,6 +92,8 @@ class BackupCodec {
     'progressionDecisions': s.progressionDecisions.length,
     'reviews': s.reviews.length,
     'cardio': s.cardio.length,
+    if (version >= 2) 'coachDecisions': s.coachDecisions.length,
+    if (version >= 2) 'coachPreferences': s.coachPreferences.length,
   };
 
   static String _checksum(Map<String, dynamic> body) =>
@@ -168,8 +178,8 @@ class BackupCodec {
           'La copia no pasa la comprobación de integridad: se modificó o se dañó. No se importó nada.',
         );
       }
-      final snapshot = _snapshot(data);
-      final counts = countsOf(snapshot);
+      final snapshot = _snapshot(data, version);
+      final counts = countsOf(snapshot, version: version);
       for (final e in counts.entries) {
         if (claimed[e.key] != e.value) {
           throw _Issue('\$.counts.${e.key}', 'no coincide con el contenido');
@@ -330,7 +340,7 @@ class BackupCodec {
     if (!seen.add(id)) throw _Issue(path, 'identificador repetido');
   }
 
-  AppSnapshot _snapshot(Map<String, dynamic> d) {
+  AppSnapshot _snapshot(Map<String, dynamic> d, int version) {
     final profileMap = _map(d['profile'], r'$.data.profile');
     final UserProfile profile;
     try {
@@ -462,6 +472,10 @@ class BackupCodec {
       final id = _str(m, 'id', p, max: 64, allowEmpty: false);
       _unique(foodIds, id, '$p.id');
       final source = _enum(CaloriesSource.values, m, 'caloriesSource', p);
+      // Estimates exist from version 2 on.
+      if (version < 2 && source == CaloriesSource.estimated) {
+        throw _Issue('$p.caloriesSource', 'valor desconocido');
+      }
       final entry = FoodEntry(
         id: id,
         dateKey: _key(m['dateKey'], '$p.dateKey'),
@@ -662,7 +676,8 @@ class BackupCodec {
       _exercise(exerciseId, '$p.exerciseId');
       final ruleVersion = _str(m, 'ruleVersion', p, max: 40, allowEmpty: false);
       final basedOn = _str(m, 'basedOn', p, max: 12);
-      _unique(decisionKeys, '$exerciseId|$basedOn|$ruleVersion', '$p.basedOn');
+      // One decision per exercise and date, under any rules version (D41a).
+      _unique(decisionKeys, '$exerciseId|$basedOn', '$p.basedOn');
       decisions.add(
         ProgressionDecision(
           id: id,
@@ -768,18 +783,93 @@ class BackupCodec {
       final m = _map(raw, p);
       final id = _str(m, 'id', p, max: 64, allowEmpty: false);
       _unique(favoriteIds, id, '$p.id');
-      favorites.add(
-        FavoriteFood(
-          id: id,
-          name: _str(m, 'name', p, max: 80, allowEmpty: false),
-          calories: _int(m, 'calories', p, min: 0, max: 5000),
-          portion: _dblN(m, 'portion', p, max: 100000),
-          unit: _strN(m, 'unit', p, max: 12),
-          proteinG: _dblN(m, 'proteinG', p, max: 2000),
-          carbsG: _dblN(m, 'carbsG', p, max: 2000),
-          fatG: _dblN(m, 'fatG', p, max: 2000),
-        ),
+      // Version 1 favorites had no source: they were typed by hand.
+      final source = version < 2
+          ? CaloriesSource.manual
+          : _enum(CaloriesSource.values, m, 'caloriesSource', p);
+      if (source == CaloriesSource.recipe) {
+        throw _Issue('$p.caloriesSource', 'no válido para un favorito');
+      }
+      final favorite = FavoriteFood(
+        id: id,
+        name: _str(m, 'name', p, max: 80, allowEmpty: false),
+        calories: _int(m, 'calories', p, min: 0, max: 5000),
+        portion: _dblN(m, 'portion', p, max: 100000),
+        unit: _strN(m, 'unit', p, max: 12),
+        proteinG: _dblN(m, 'proteinG', p, max: 2000),
+        carbsG: _dblN(m, 'carbsG', p, max: 2000),
+        fatG: _dblN(m, 'fatG', p, max: 2000),
+        caloriesSource: source,
       );
+      if (source == CaloriesSource.macros &&
+          favorite.calories !=
+              caloriesFromMacros(
+                favorite.proteinG,
+                favorite.carbsG,
+                favorite.fatG,
+              )) {
+        throw _Issue('$p.calories', 'no coincide con los macros');
+      }
+      favorites.add(favorite);
+    }
+
+    final coachDecisions = <CoachDecision>[];
+    final coachPreferences = <CoachPreference>[];
+    if (version >= 2) {
+      final ids = <String>{}, accepted = <String>{};
+      for (final (i, raw) in _list(
+        d['coachDecisions'],
+        r'$.data.coachDecisions',
+      ).indexed) {
+        final p = '\$.data.coachDecisions[$i]';
+        final m = _map(raw, p);
+        final id = _str(m, 'id', p, max: 64, allowEmpty: false);
+        _unique(ids, id, '$p.id');
+        final ruleId = _str(m, 'ruleId', p, max: 80, allowEmpty: false);
+        final subject = _str(m, 'subject', p, max: 120, allowEmpty: false);
+        final anchor = _str(m, 'anchor', p, max: 120);
+        final recKey = _str(m, 'recKey', p, max: 330, allowEmpty: false);
+        if (recKey != '$ruleId|$subject|$anchor') {
+          throw _Issue('$p.recKey', 'no coincide con la regla');
+        }
+        final status = _enum(CoachDecisionStatus.values, m, 'status', p);
+        if (status == CoachDecisionStatus.accepted && !accepted.add(recKey)) {
+          throw _Issue('$p.recKey', 'aceptada dos veces');
+        }
+        coachDecisions.add(
+          CoachDecision(
+            id: id,
+            recKey: recKey,
+            ruleId: ruleId,
+            kbVersion: _str(m, 'kbVersion', p, max: 40, allowEmpty: false),
+            subject: subject,
+            anchor: anchor,
+            status: status,
+            decidedAt: _date(m['decidedAt'], '$p.decidedAt'),
+            summary: _str(m, 'summary', p, max: 500),
+          ),
+        );
+      }
+      final families = <String>{};
+      for (final (i, raw) in _list(
+        d['coachPreferences'],
+        r'$.data.coachPreferences',
+      ).indexed) {
+        final p = '\$.data.coachPreferences[$i]';
+        final m = _map(raw, p);
+        final family = _str(m, 'family', p, max: 40, allowEmpty: false);
+        if (!RuleFamily.values.any((f) => f.name == family)) {
+          throw _Issue('$p.family', 'valor desconocido');
+        }
+        _unique(families, family, '$p.family');
+        coachPreferences.add(
+          CoachPreference(
+            family: family,
+            muted: _bool(m, 'muted', p),
+            updatedAt: _date(m['updatedAt'], '$p.updatedAt'),
+          ),
+        );
+      }
     }
 
     final recipes = <Recipe>[];
@@ -856,6 +946,8 @@ class BackupCodec {
       favorites: favorites,
       recipes: recipes,
       goals: goals,
+      coachDecisions: coachDecisions,
+      coachPreferences: coachPreferences,
     );
   }
 }

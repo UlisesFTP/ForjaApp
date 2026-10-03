@@ -1,6 +1,6 @@
 # FORJA · Flutter MVVM
 
-Organizador móvil de rutinas de gimnasio con interfaz monocromática oscura, datos locales en SQLite y sin cuenta ni servidor. Versión `0.9.0+2` (candidata: iOS y varias pruebas de dispositivo siguen pendientes; ver [Alcance](docs/ALCANCE.md)).
+Organizador móvil de rutinas de gimnasio con interfaz monocromática oscura, datos locales en SQLite y sin cuenta ni servidor. Incluye un minicoach con sistema experto local (`expert-v1`) y un asistente IA **opcional**, desactivado por defecto, que funciona con la clave de tu propio proveedor. Versión `0.9.0+2` (candidata: iOS y varias pruebas de dispositivo siguen pendientes; ver [Alcance](docs/ALCANCE.md)).
 
 ## Ejecutar
 
@@ -37,7 +37,7 @@ Un release sin `android/key.properties` se rechaza a propósito. La firma de pro
 - **Plan:** versiones del plan (borrador → aceptar con vigencia), generador local, editor y acceso a cada fecha.
 - **Progreso:** cumplimiento, volumen real, evolución con tabla accesible, historial con series y sugerencias de progresión.
 - **Ejercicios:** 39 ejercicios, búsqueda sin acentos, filtros, alternativas y tutorial externo.
-- **Más:** cardio, nutrición, minicoach (perfil y revisión mensual), recordatorios, unidad de peso, licencias y datos y privacidad.
+- **Más:** cardio, nutrición, minicoach (sistema experto con su «por qué», perfil y revisión mensual), asistente IA (opcional), recordatorios, unidad de peso, licencias y datos y privacidad.
 
 El primer arranque ofrece completar el perfil sin pedir cuenta (se puede saltar y retomar). La plantilla inicial es piernas martes, empuje jueves y tirón sábado; sus pesos son valores de ejemplo.
 
@@ -48,6 +48,7 @@ Todo se guarda en una base **SQLite** privada de la app (Drift, `forja.sqlite` e
 - **Copia de seguridad:** Más → Datos y privacidad. Exporta un JSON versionado con SHA-256 (detecta daños, no cifra) y contiene datos personales. Importar **reemplaza** todo: valida el archivo, muestra una vista previa, guarda antes una copia previa privada y reemplaza en una transacción. Eliminar todos los datos exige escribir BORRAR.
 - **Actualización desde la 0.1:** el primer arranque importa una sola vez el JSON antiguo (`forja_flutter_snapshot_v1`); el original nunca se modifica. Si no se puede validar, la app lo explica y ofrece reintentar, copiar los datos originales o continuar sin importar (con confirmación). Los datos del prototipo web no se migran.
 - **Recordatorios:** notificaciones locales con permiso del sistema; el sistema puede retrasarlas unos minutos.
+- **Asistente IA (opcional):** Más → Asistente IA. Elige proveedor (OpenCode Go por defecto, la API directa de Xiaomi MiMo o uno compatible con OpenAI por `https`) y escribe **tu** clave **en el teléfono**: se guarda solo en el almacenamiento seguro del sistema (nunca en la base, las copias, las preferencias ni el repositorio; no la pases con `--dart-define`). Se activa solo tras aceptar el consentimiento, que enumera lo que puede consultar. Cada respuesta muestra qué consultó, y solo propone: nada se guarda sin que lo confirmes. «Probar conexión» comprueba la clave y si el proveedor admite herramientas y JSON. Usar OpenCode Go desde una app que no es de programación puede hacer que limiten tu cuenta (lo explica el consentimiento). Borrar todo elimina también la clave y los ajustes del asistente. Es el único motivo del permiso INTERNET.
 
 ## MVVM
 

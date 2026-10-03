@@ -2,6 +2,8 @@ import 'package:flutter/foundation.dart';
 
 import '../../core/date_utils.dart';
 import '../../core/ids.dart';
+import '../../domain/expert/knowledge/knowledge_base.dart';
+import '../../domain/expert/model/recommendation.dart' show RuleFamily;
 import '../../domain/models/models.dart';
 import '../../domain/repositories/repositories.dart';
 import '../../domain/services/plan_validator.dart';
@@ -18,7 +20,8 @@ class LocalForjaRepository extends ChangeNotifier
         CardioRepository,
         ProfileRepository,
         NutritionRepository,
-        SettingsRepository {
+        SettingsRepository,
+        CoachRepository {
   LocalForjaRepository(
     this._store, {
     IdGenerator? newId,
@@ -893,11 +896,10 @@ class LocalForjaRepository extends ChangeNotifier
       );
     }
     return _mutate((state) {
+      // One decision per suggestion, whatever version of the rules made it
+      // (D21, D41a): a new version never reopens what was decided.
       final taken = state.progressionDecisions.any(
-        (d) =>
-            d.exerciseId == exerciseId &&
-            d.basedOn == basedOn &&
-            d.ruleVersion == ruleVersion,
+        (d) => d.exerciseId == exerciseId && d.basedOn == basedOn,
       );
       if (taken) return state;
       return state.copyWith(
@@ -1287,6 +1289,11 @@ class LocalForjaRepository extends ChangeNotifier
 
   @override
   Future<void> addFavorite(FavoriteFood food) {
+    if (food.caloriesSource == CaloriesSource.recipe) {
+      return Future.error(
+        ArgumentError('Una receta se guarda como receta, no como favorito.'),
+      );
+    }
     final problem = _checkFood(
       FoodEntry(
         id: food.id,
@@ -1298,6 +1305,7 @@ class LocalForjaRepository extends ChangeNotifier
         proteinG: food.proteinG,
         carbsG: food.carbsG,
         fatG: food.fatG,
+        caloriesSource: food.caloriesSource,
       ),
     );
     if (problem != null) return Future.error(ArgumentError(problem));
@@ -1308,6 +1316,86 @@ class LocalForjaRepository extends ChangeNotifier
         throw StateError('Máximo 200 favoritos.');
       }
       return state.copyWith(favorites: [...state.favorites, food]);
+    });
+  }
+
+  @override
+  List<CoachDecision> get coachDecisions => _snapshot.coachDecisions;
+
+  @override
+  List<CoachPreference> get coachPreferences => _snapshot.coachPreferences;
+
+  @override
+  Future<void> decideCoach({
+    required String ruleId,
+    required String subject,
+    required String anchor,
+    required String kbVersion,
+    required CoachDecisionStatus status,
+    String summary = '',
+  }) {
+    if (ruleById(ruleId) == null) {
+      return Future.error(ArgumentError('Recomendación desconocida.'));
+    }
+    if (subject.isEmpty ||
+        subject.length > 120 ||
+        anchor.length > 120 ||
+        kbVersion.isEmpty ||
+        kbVersion.length > 40) {
+      return Future.error(ArgumentError('Recomendación no válida.'));
+    }
+    final key = '$ruleId|$subject|$anchor';
+    final text = summary.length > 500 ? summary.substring(0, 500) : summary;
+    return _mutate((state) {
+      // Accepting is final; nothing is recorded on top of it.
+      final accepted = state.coachDecisions.any(
+        (d) => d.recKey == key && d.status == CoachDecisionStatus.accepted,
+      );
+      if (accepted) return state;
+      return state.copyWith(
+        coachDecisions: [
+          ...state.coachDecisions,
+          CoachDecision(
+            id: _newId(),
+            recKey: key,
+            ruleId: ruleId,
+            kbVersion: kbVersion,
+            subject: subject,
+            anchor: anchor,
+            status: status,
+            decidedAt: _clock().toUtc(),
+            summary: text,
+          ),
+        ],
+      );
+    });
+  }
+
+  @override
+  Future<void> setCoachMuted(String family, bool muted) {
+    if (!RuleFamily.values.any((f) => f.name == family)) {
+      return Future.error(ArgumentError('Tipo de consejo desconocido.'));
+    }
+    return _mutate((state) {
+      final current = state.coachPreferences
+          .where((p) => p.family == family)
+          .firstOrNull;
+      if (current?.muted == muted || (current == null && !muted)) {
+        return state;
+      }
+      final next = CoachPreference(
+        family: family,
+        muted: muted,
+        updatedAt: _clock().toUtc(),
+      );
+      return state.copyWith(
+        coachPreferences: current == null
+            ? [...state.coachPreferences, next]
+            : [
+                for (final p in state.coachPreferences)
+                  if (p.family == family) next else p,
+              ],
+      );
     });
   }
 

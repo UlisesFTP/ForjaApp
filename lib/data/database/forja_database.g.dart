@@ -10768,6 +10768,16 @@ class $FoodFavoritesTable extends FoodFavorites
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumnWithTypeConverter<CaloriesSource, String>
+  caloriesSource = GeneratedColumn<String>(
+    'calories_source',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('manual'),
+  ).withConverter<CaloriesSource>($FoodFavoritesTable.$convertercaloriesSource);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     seq,
@@ -10778,6 +10788,7 @@ class $FoodFavoritesTable extends FoodFavorites
     proteinG,
     carbsG,
     fatG,
+    caloriesSource,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -10895,6 +10906,12 @@ class $FoodFavoritesTable extends FoodFavorites
         DriftSqlType.double,
         data['${effectivePrefix}fat_g'],
       ),
+      caloriesSource: $FoodFavoritesTable.$convertercaloriesSource.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}calories_source'],
+        )!,
+      ),
     );
   }
 
@@ -10902,6 +10919,11 @@ class $FoodFavoritesTable extends FoodFavorites
   $FoodFavoritesTable createAlias(String alias) {
     return $FoodFavoritesTable(attachedDatabase, alias);
   }
+
+  static JsonTypeConverter2<CaloriesSource, String, String>
+  $convertercaloriesSource = const EnumNameConverter<CaloriesSource>(
+    CaloriesSource.values,
+  );
 }
 
 class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
@@ -10914,6 +10936,7 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
   final double? proteinG;
   final double? carbsG;
   final double? fatG;
+  final CaloriesSource caloriesSource;
   const FavoriteRow({
     required this.id,
     required this.seq,
@@ -10924,6 +10947,7 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
     this.proteinG,
     this.carbsG,
     this.fatG,
+    required this.caloriesSource,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -10947,6 +10971,11 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
     if (!nullToAbsent || fatG != null) {
       map['fat_g'] = Variable<double>(fatG);
     }
+    {
+      map['calories_source'] = Variable<String>(
+        $FoodFavoritesTable.$convertercaloriesSource.toSql(caloriesSource),
+      );
+    }
     return map;
   }
 
@@ -10967,6 +10996,7 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
           ? const Value.absent()
           : Value(carbsG),
       fatG: fatG == null && nullToAbsent ? const Value.absent() : Value(fatG),
+      caloriesSource: Value(caloriesSource),
     );
   }
 
@@ -10985,6 +11015,9 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
       proteinG: serializer.fromJson<double?>(json['proteinG']),
       carbsG: serializer.fromJson<double?>(json['carbsG']),
       fatG: serializer.fromJson<double?>(json['fatG']),
+      caloriesSource: $FoodFavoritesTable.$convertercaloriesSource.fromJson(
+        serializer.fromJson<String>(json['caloriesSource']),
+      ),
     );
   }
   @override
@@ -11000,6 +11033,9 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
       'proteinG': serializer.toJson<double?>(proteinG),
       'carbsG': serializer.toJson<double?>(carbsG),
       'fatG': serializer.toJson<double?>(fatG),
+      'caloriesSource': serializer.toJson<String>(
+        $FoodFavoritesTable.$convertercaloriesSource.toJson(caloriesSource),
+      ),
     };
   }
 
@@ -11013,6 +11049,7 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
     Value<double?> proteinG = const Value.absent(),
     Value<double?> carbsG = const Value.absent(),
     Value<double?> fatG = const Value.absent(),
+    CaloriesSource? caloriesSource,
   }) => FavoriteRow(
     id: id ?? this.id,
     seq: seq ?? this.seq,
@@ -11023,6 +11060,7 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
     proteinG: proteinG.present ? proteinG.value : this.proteinG,
     carbsG: carbsG.present ? carbsG.value : this.carbsG,
     fatG: fatG.present ? fatG.value : this.fatG,
+    caloriesSource: caloriesSource ?? this.caloriesSource,
   );
   FavoriteRow copyWithCompanion(FoodFavoritesCompanion data) {
     return FavoriteRow(
@@ -11035,6 +11073,9 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
       proteinG: data.proteinG.present ? data.proteinG.value : this.proteinG,
       carbsG: data.carbsG.present ? data.carbsG.value : this.carbsG,
       fatG: data.fatG.present ? data.fatG.value : this.fatG,
+      caloriesSource: data.caloriesSource.present
+          ? data.caloriesSource.value
+          : this.caloriesSource,
     );
   }
 
@@ -11049,7 +11090,8 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
           ..write('unit: $unit, ')
           ..write('proteinG: $proteinG, ')
           ..write('carbsG: $carbsG, ')
-          ..write('fatG: $fatG')
+          ..write('fatG: $fatG, ')
+          ..write('caloriesSource: $caloriesSource')
           ..write(')'))
         .toString();
   }
@@ -11065,6 +11107,7 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
     proteinG,
     carbsG,
     fatG,
+    caloriesSource,
   );
   @override
   bool operator ==(Object other) =>
@@ -11078,7 +11121,8 @@ class FavoriteRow extends DataClass implements Insertable<FavoriteRow> {
           other.unit == this.unit &&
           other.proteinG == this.proteinG &&
           other.carbsG == this.carbsG &&
-          other.fatG == this.fatG);
+          other.fatG == this.fatG &&
+          other.caloriesSource == this.caloriesSource);
 }
 
 class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
@@ -11091,6 +11135,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
   final Value<double?> proteinG;
   final Value<double?> carbsG;
   final Value<double?> fatG;
+  final Value<CaloriesSource> caloriesSource;
   final Value<int> rowid;
   const FoodFavoritesCompanion({
     this.id = const Value.absent(),
@@ -11102,6 +11147,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
     this.proteinG = const Value.absent(),
     this.carbsG = const Value.absent(),
     this.fatG = const Value.absent(),
+    this.caloriesSource = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   FoodFavoritesCompanion.insert({
@@ -11114,6 +11160,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
     this.proteinG = const Value.absent(),
     this.carbsG = const Value.absent(),
     this.fatG = const Value.absent(),
+    this.caloriesSource = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        seq = Value(seq),
@@ -11129,6 +11176,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
     Expression<double>? proteinG,
     Expression<double>? carbsG,
     Expression<double>? fatG,
+    Expression<String>? caloriesSource,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -11141,6 +11189,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
       if (proteinG != null) 'protein_g': proteinG,
       if (carbsG != null) 'carbs_g': carbsG,
       if (fatG != null) 'fat_g': fatG,
+      if (caloriesSource != null) 'calories_source': caloriesSource,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -11155,6 +11204,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
     Value<double?>? proteinG,
     Value<double?>? carbsG,
     Value<double?>? fatG,
+    Value<CaloriesSource>? caloriesSource,
     Value<int>? rowid,
   }) {
     return FoodFavoritesCompanion(
@@ -11167,6 +11217,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
       proteinG: proteinG ?? this.proteinG,
       carbsG: carbsG ?? this.carbsG,
       fatG: fatG ?? this.fatG,
+      caloriesSource: caloriesSource ?? this.caloriesSource,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -11201,6 +11252,13 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
     if (fatG.present) {
       map['fat_g'] = Variable<double>(fatG.value);
     }
+    if (caloriesSource.present) {
+      map['calories_source'] = Variable<String>(
+        $FoodFavoritesTable.$convertercaloriesSource.toSql(
+          caloriesSource.value,
+        ),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -11219,6 +11277,7 @@ class FoodFavoritesCompanion extends UpdateCompanion<FavoriteRow> {
           ..write('proteinG: $proteinG, ')
           ..write('carbsG: $carbsG, ')
           ..write('fatG: $fatG, ')
+          ..write('caloriesSource: $caloriesSource, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -12677,6 +12736,929 @@ class NutritionGoalsTableCompanion extends UpdateCompanion<GoalsRow> {
   }
 }
 
+class $CoachDecisionsTable extends CoachDecisions
+    with TableInfo<$CoachDecisionsTable, CoachDecisionRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CoachDecisionsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _recKeyMeta = const VerificationMeta('recKey');
+  @override
+  late final GeneratedColumn<String> recKey = GeneratedColumn<String>(
+    'rec_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ruleIdMeta = const VerificationMeta('ruleId');
+  @override
+  late final GeneratedColumn<String> ruleId = GeneratedColumn<String>(
+    'rule_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _kbVersionMeta = const VerificationMeta(
+    'kbVersion',
+  );
+  @override
+  late final GeneratedColumn<String> kbVersion = GeneratedColumn<String>(
+    'kb_version',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _subjectMeta = const VerificationMeta(
+    'subject',
+  );
+  @override
+  late final GeneratedColumn<String> subject = GeneratedColumn<String>(
+    'subject',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _anchorMeta = const VerificationMeta('anchor');
+  @override
+  late final GeneratedColumn<String> anchor = GeneratedColumn<String>(
+    'anchor',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<CoachDecisionStatus, String>
+  status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<CoachDecisionStatus>($CoachDecisionsTable.$converterstatus);
+  static const VerificationMeta _decidedAtMeta = const VerificationMeta(
+    'decidedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> decidedAt = GeneratedColumn<DateTime>(
+    'decided_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _summaryMeta = const VerificationMeta(
+    'summary',
+  );
+  @override
+  late final GeneratedColumn<String> summary = GeneratedColumn<String>(
+    'summary',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    seq,
+    recKey,
+    ruleId,
+    kbVersion,
+    subject,
+    anchor,
+    status,
+    decidedAt,
+    summary,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'coach_decisions';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CoachDecisionRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seqMeta);
+    }
+    if (data.containsKey('rec_key')) {
+      context.handle(
+        _recKeyMeta,
+        recKey.isAcceptableOrUnknown(data['rec_key']!, _recKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_recKeyMeta);
+    }
+    if (data.containsKey('rule_id')) {
+      context.handle(
+        _ruleIdMeta,
+        ruleId.isAcceptableOrUnknown(data['rule_id']!, _ruleIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ruleIdMeta);
+    }
+    if (data.containsKey('kb_version')) {
+      context.handle(
+        _kbVersionMeta,
+        kbVersion.isAcceptableOrUnknown(data['kb_version']!, _kbVersionMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_kbVersionMeta);
+    }
+    if (data.containsKey('subject')) {
+      context.handle(
+        _subjectMeta,
+        subject.isAcceptableOrUnknown(data['subject']!, _subjectMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_subjectMeta);
+    }
+    if (data.containsKey('anchor')) {
+      context.handle(
+        _anchorMeta,
+        anchor.isAcceptableOrUnknown(data['anchor']!, _anchorMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_anchorMeta);
+    }
+    if (data.containsKey('decided_at')) {
+      context.handle(
+        _decidedAtMeta,
+        decidedAt.isAcceptableOrUnknown(data['decided_at']!, _decidedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_decidedAtMeta);
+    }
+    if (data.containsKey('summary')) {
+      context.handle(
+        _summaryMeta,
+        summary.isAcceptableOrUnknown(data['summary']!, _summaryMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_summaryMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CoachDecisionRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CoachDecisionRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+      recKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rec_key'],
+      )!,
+      ruleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}rule_id'],
+      )!,
+      kbVersion: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}kb_version'],
+      )!,
+      subject: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}subject'],
+      )!,
+      anchor: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}anchor'],
+      )!,
+      status: $CoachDecisionsTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      decidedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}decided_at'],
+      )!,
+      summary: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}summary'],
+      )!,
+    );
+  }
+
+  @override
+  $CoachDecisionsTable createAlias(String alias) {
+    return $CoachDecisionsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<CoachDecisionStatus, String, String>
+  $converterstatus = const EnumNameConverter<CoachDecisionStatus>(
+    CoachDecisionStatus.values,
+  );
+}
+
+class CoachDecisionRow extends DataClass
+    implements Insertable<CoachDecisionRow> {
+  final String id;
+  final int seq;
+  final String recKey;
+  final String ruleId;
+  final String kbVersion;
+  final String subject;
+  final String anchor;
+  final CoachDecisionStatus status;
+  final DateTime decidedAt;
+  final String summary;
+  const CoachDecisionRow({
+    required this.id,
+    required this.seq,
+    required this.recKey,
+    required this.ruleId,
+    required this.kbVersion,
+    required this.subject,
+    required this.anchor,
+    required this.status,
+    required this.decidedAt,
+    required this.summary,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['seq'] = Variable<int>(seq);
+    map['rec_key'] = Variable<String>(recKey);
+    map['rule_id'] = Variable<String>(ruleId);
+    map['kb_version'] = Variable<String>(kbVersion);
+    map['subject'] = Variable<String>(subject);
+    map['anchor'] = Variable<String>(anchor);
+    {
+      map['status'] = Variable<String>(
+        $CoachDecisionsTable.$converterstatus.toSql(status),
+      );
+    }
+    map['decided_at'] = Variable<DateTime>(decidedAt);
+    map['summary'] = Variable<String>(summary);
+    return map;
+  }
+
+  CoachDecisionsCompanion toCompanion(bool nullToAbsent) {
+    return CoachDecisionsCompanion(
+      id: Value(id),
+      seq: Value(seq),
+      recKey: Value(recKey),
+      ruleId: Value(ruleId),
+      kbVersion: Value(kbVersion),
+      subject: Value(subject),
+      anchor: Value(anchor),
+      status: Value(status),
+      decidedAt: Value(decidedAt),
+      summary: Value(summary),
+    );
+  }
+
+  factory CoachDecisionRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CoachDecisionRow(
+      id: serializer.fromJson<String>(json['id']),
+      seq: serializer.fromJson<int>(json['seq']),
+      recKey: serializer.fromJson<String>(json['recKey']),
+      ruleId: serializer.fromJson<String>(json['ruleId']),
+      kbVersion: serializer.fromJson<String>(json['kbVersion']),
+      subject: serializer.fromJson<String>(json['subject']),
+      anchor: serializer.fromJson<String>(json['anchor']),
+      status: $CoachDecisionsTable.$converterstatus.fromJson(
+        serializer.fromJson<String>(json['status']),
+      ),
+      decidedAt: serializer.fromJson<DateTime>(json['decidedAt']),
+      summary: serializer.fromJson<String>(json['summary']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'seq': serializer.toJson<int>(seq),
+      'recKey': serializer.toJson<String>(recKey),
+      'ruleId': serializer.toJson<String>(ruleId),
+      'kbVersion': serializer.toJson<String>(kbVersion),
+      'subject': serializer.toJson<String>(subject),
+      'anchor': serializer.toJson<String>(anchor),
+      'status': serializer.toJson<String>(
+        $CoachDecisionsTable.$converterstatus.toJson(status),
+      ),
+      'decidedAt': serializer.toJson<DateTime>(decidedAt),
+      'summary': serializer.toJson<String>(summary),
+    };
+  }
+
+  CoachDecisionRow copyWith({
+    String? id,
+    int? seq,
+    String? recKey,
+    String? ruleId,
+    String? kbVersion,
+    String? subject,
+    String? anchor,
+    CoachDecisionStatus? status,
+    DateTime? decidedAt,
+    String? summary,
+  }) => CoachDecisionRow(
+    id: id ?? this.id,
+    seq: seq ?? this.seq,
+    recKey: recKey ?? this.recKey,
+    ruleId: ruleId ?? this.ruleId,
+    kbVersion: kbVersion ?? this.kbVersion,
+    subject: subject ?? this.subject,
+    anchor: anchor ?? this.anchor,
+    status: status ?? this.status,
+    decidedAt: decidedAt ?? this.decidedAt,
+    summary: summary ?? this.summary,
+  );
+  CoachDecisionRow copyWithCompanion(CoachDecisionsCompanion data) {
+    return CoachDecisionRow(
+      id: data.id.present ? data.id.value : this.id,
+      seq: data.seq.present ? data.seq.value : this.seq,
+      recKey: data.recKey.present ? data.recKey.value : this.recKey,
+      ruleId: data.ruleId.present ? data.ruleId.value : this.ruleId,
+      kbVersion: data.kbVersion.present ? data.kbVersion.value : this.kbVersion,
+      subject: data.subject.present ? data.subject.value : this.subject,
+      anchor: data.anchor.present ? data.anchor.value : this.anchor,
+      status: data.status.present ? data.status.value : this.status,
+      decidedAt: data.decidedAt.present ? data.decidedAt.value : this.decidedAt,
+      summary: data.summary.present ? data.summary.value : this.summary,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachDecisionRow(')
+          ..write('id: $id, ')
+          ..write('seq: $seq, ')
+          ..write('recKey: $recKey, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('kbVersion: $kbVersion, ')
+          ..write('subject: $subject, ')
+          ..write('anchor: $anchor, ')
+          ..write('status: $status, ')
+          ..write('decidedAt: $decidedAt, ')
+          ..write('summary: $summary')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    seq,
+    recKey,
+    ruleId,
+    kbVersion,
+    subject,
+    anchor,
+    status,
+    decidedAt,
+    summary,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CoachDecisionRow &&
+          other.id == this.id &&
+          other.seq == this.seq &&
+          other.recKey == this.recKey &&
+          other.ruleId == this.ruleId &&
+          other.kbVersion == this.kbVersion &&
+          other.subject == this.subject &&
+          other.anchor == this.anchor &&
+          other.status == this.status &&
+          other.decidedAt == this.decidedAt &&
+          other.summary == this.summary);
+}
+
+class CoachDecisionsCompanion extends UpdateCompanion<CoachDecisionRow> {
+  final Value<String> id;
+  final Value<int> seq;
+  final Value<String> recKey;
+  final Value<String> ruleId;
+  final Value<String> kbVersion;
+  final Value<String> subject;
+  final Value<String> anchor;
+  final Value<CoachDecisionStatus> status;
+  final Value<DateTime> decidedAt;
+  final Value<String> summary;
+  final Value<int> rowid;
+  const CoachDecisionsCompanion({
+    this.id = const Value.absent(),
+    this.seq = const Value.absent(),
+    this.recKey = const Value.absent(),
+    this.ruleId = const Value.absent(),
+    this.kbVersion = const Value.absent(),
+    this.subject = const Value.absent(),
+    this.anchor = const Value.absent(),
+    this.status = const Value.absent(),
+    this.decidedAt = const Value.absent(),
+    this.summary = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CoachDecisionsCompanion.insert({
+    required String id,
+    required int seq,
+    required String recKey,
+    required String ruleId,
+    required String kbVersion,
+    required String subject,
+    required String anchor,
+    required CoachDecisionStatus status,
+    required DateTime decidedAt,
+    required String summary,
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       seq = Value(seq),
+       recKey = Value(recKey),
+       ruleId = Value(ruleId),
+       kbVersion = Value(kbVersion),
+       subject = Value(subject),
+       anchor = Value(anchor),
+       status = Value(status),
+       decidedAt = Value(decidedAt),
+       summary = Value(summary);
+  static Insertable<CoachDecisionRow> custom({
+    Expression<String>? id,
+    Expression<int>? seq,
+    Expression<String>? recKey,
+    Expression<String>? ruleId,
+    Expression<String>? kbVersion,
+    Expression<String>? subject,
+    Expression<String>? anchor,
+    Expression<String>? status,
+    Expression<DateTime>? decidedAt,
+    Expression<String>? summary,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (seq != null) 'seq': seq,
+      if (recKey != null) 'rec_key': recKey,
+      if (ruleId != null) 'rule_id': ruleId,
+      if (kbVersion != null) 'kb_version': kbVersion,
+      if (subject != null) 'subject': subject,
+      if (anchor != null) 'anchor': anchor,
+      if (status != null) 'status': status,
+      if (decidedAt != null) 'decided_at': decidedAt,
+      if (summary != null) 'summary': summary,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CoachDecisionsCompanion copyWith({
+    Value<String>? id,
+    Value<int>? seq,
+    Value<String>? recKey,
+    Value<String>? ruleId,
+    Value<String>? kbVersion,
+    Value<String>? subject,
+    Value<String>? anchor,
+    Value<CoachDecisionStatus>? status,
+    Value<DateTime>? decidedAt,
+    Value<String>? summary,
+    Value<int>? rowid,
+  }) {
+    return CoachDecisionsCompanion(
+      id: id ?? this.id,
+      seq: seq ?? this.seq,
+      recKey: recKey ?? this.recKey,
+      ruleId: ruleId ?? this.ruleId,
+      kbVersion: kbVersion ?? this.kbVersion,
+      subject: subject ?? this.subject,
+      anchor: anchor ?? this.anchor,
+      status: status ?? this.status,
+      decidedAt: decidedAt ?? this.decidedAt,
+      summary: summary ?? this.summary,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (recKey.present) {
+      map['rec_key'] = Variable<String>(recKey.value);
+    }
+    if (ruleId.present) {
+      map['rule_id'] = Variable<String>(ruleId.value);
+    }
+    if (kbVersion.present) {
+      map['kb_version'] = Variable<String>(kbVersion.value);
+    }
+    if (subject.present) {
+      map['subject'] = Variable<String>(subject.value);
+    }
+    if (anchor.present) {
+      map['anchor'] = Variable<String>(anchor.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(
+        $CoachDecisionsTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (decidedAt.present) {
+      map['decided_at'] = Variable<DateTime>(decidedAt.value);
+    }
+    if (summary.present) {
+      map['summary'] = Variable<String>(summary.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachDecisionsCompanion(')
+          ..write('id: $id, ')
+          ..write('seq: $seq, ')
+          ..write('recKey: $recKey, ')
+          ..write('ruleId: $ruleId, ')
+          ..write('kbVersion: $kbVersion, ')
+          ..write('subject: $subject, ')
+          ..write('anchor: $anchor, ')
+          ..write('status: $status, ')
+          ..write('decidedAt: $decidedAt, ')
+          ..write('summary: $summary, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CoachPreferencesTable extends CoachPreferences
+    with TableInfo<$CoachPreferencesTable, CoachPreferenceRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CoachPreferencesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _familyMeta = const VerificationMeta('family');
+  @override
+  late final GeneratedColumn<String> family = GeneratedColumn<String>(
+    'family',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _seqMeta = const VerificationMeta('seq');
+  @override
+  late final GeneratedColumn<int> seq = GeneratedColumn<int>(
+    'seq',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways('UNIQUE'),
+  );
+  static const VerificationMeta _mutedMeta = const VerificationMeta('muted');
+  @override
+  late final GeneratedColumn<bool> muted = GeneratedColumn<bool>(
+    'muted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("muted" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [family, seq, muted, updatedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'coach_preferences';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CoachPreferenceRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('family')) {
+      context.handle(
+        _familyMeta,
+        family.isAcceptableOrUnknown(data['family']!, _familyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_familyMeta);
+    }
+    if (data.containsKey('seq')) {
+      context.handle(
+        _seqMeta,
+        seq.isAcceptableOrUnknown(data['seq']!, _seqMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_seqMeta);
+    }
+    if (data.containsKey('muted')) {
+      context.handle(
+        _mutedMeta,
+        muted.isAcceptableOrUnknown(data['muted']!, _mutedMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_mutedMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {family};
+  @override
+  CoachPreferenceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CoachPreferenceRow(
+      family: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}family'],
+      )!,
+      seq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}seq'],
+      )!,
+      muted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}muted'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CoachPreferencesTable createAlias(String alias) {
+    return $CoachPreferencesTable(attachedDatabase, alias);
+  }
+}
+
+class CoachPreferenceRow extends DataClass
+    implements Insertable<CoachPreferenceRow> {
+  final String family;
+  final int seq;
+  final bool muted;
+  final DateTime updatedAt;
+  const CoachPreferenceRow({
+    required this.family,
+    required this.seq,
+    required this.muted,
+    required this.updatedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['family'] = Variable<String>(family);
+    map['seq'] = Variable<int>(seq);
+    map['muted'] = Variable<bool>(muted);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    return map;
+  }
+
+  CoachPreferencesCompanion toCompanion(bool nullToAbsent) {
+    return CoachPreferencesCompanion(
+      family: Value(family),
+      seq: Value(seq),
+      muted: Value(muted),
+      updatedAt: Value(updatedAt),
+    );
+  }
+
+  factory CoachPreferenceRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CoachPreferenceRow(
+      family: serializer.fromJson<String>(json['family']),
+      seq: serializer.fromJson<int>(json['seq']),
+      muted: serializer.fromJson<bool>(json['muted']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'family': serializer.toJson<String>(family),
+      'seq': serializer.toJson<int>(seq),
+      'muted': serializer.toJson<bool>(muted),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+    };
+  }
+
+  CoachPreferenceRow copyWith({
+    String? family,
+    int? seq,
+    bool? muted,
+    DateTime? updatedAt,
+  }) => CoachPreferenceRow(
+    family: family ?? this.family,
+    seq: seq ?? this.seq,
+    muted: muted ?? this.muted,
+    updatedAt: updatedAt ?? this.updatedAt,
+  );
+  CoachPreferenceRow copyWithCompanion(CoachPreferencesCompanion data) {
+    return CoachPreferenceRow(
+      family: data.family.present ? data.family.value : this.family,
+      seq: data.seq.present ? data.seq.value : this.seq,
+      muted: data.muted.present ? data.muted.value : this.muted,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachPreferenceRow(')
+          ..write('family: $family, ')
+          ..write('seq: $seq, ')
+          ..write('muted: $muted, ')
+          ..write('updatedAt: $updatedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(family, seq, muted, updatedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CoachPreferenceRow &&
+          other.family == this.family &&
+          other.seq == this.seq &&
+          other.muted == this.muted &&
+          other.updatedAt == this.updatedAt);
+}
+
+class CoachPreferencesCompanion extends UpdateCompanion<CoachPreferenceRow> {
+  final Value<String> family;
+  final Value<int> seq;
+  final Value<bool> muted;
+  final Value<DateTime> updatedAt;
+  final Value<int> rowid;
+  const CoachPreferencesCompanion({
+    this.family = const Value.absent(),
+    this.seq = const Value.absent(),
+    this.muted = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CoachPreferencesCompanion.insert({
+    required String family,
+    required int seq,
+    required bool muted,
+    required DateTime updatedAt,
+    this.rowid = const Value.absent(),
+  }) : family = Value(family),
+       seq = Value(seq),
+       muted = Value(muted),
+       updatedAt = Value(updatedAt);
+  static Insertable<CoachPreferenceRow> custom({
+    Expression<String>? family,
+    Expression<int>? seq,
+    Expression<bool>? muted,
+    Expression<DateTime>? updatedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (family != null) 'family': family,
+      if (seq != null) 'seq': seq,
+      if (muted != null) 'muted': muted,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CoachPreferencesCompanion copyWith({
+    Value<String>? family,
+    Value<int>? seq,
+    Value<bool>? muted,
+    Value<DateTime>? updatedAt,
+    Value<int>? rowid,
+  }) {
+    return CoachPreferencesCompanion(
+      family: family ?? this.family,
+      seq: seq ?? this.seq,
+      muted: muted ?? this.muted,
+      updatedAt: updatedAt ?? this.updatedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (family.present) {
+      map['family'] = Variable<String>(family.value);
+    }
+    if (seq.present) {
+      map['seq'] = Variable<int>(seq.value);
+    }
+    if (muted.present) {
+      map['muted'] = Variable<bool>(muted.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CoachPreferencesCompanion(')
+          ..write('family: $family, ')
+          ..write('seq: $seq, ')
+          ..write('muted: $muted, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$ForjaDatabase extends GeneratedDatabase {
   _$ForjaDatabase(QueryExecutor e) : super(e);
   $ForjaDatabaseManager get managers => $ForjaDatabaseManager(this);
@@ -12714,6 +13696,10 @@ abstract class _$ForjaDatabase extends GeneratedDatabase {
       $RecipeIngredientsTable(this);
   late final $NutritionGoalsTableTable nutritionGoalsTable =
       $NutritionGoalsTableTable(this);
+  late final $CoachDecisionsTable coachDecisions = $CoachDecisionsTable(this);
+  late final $CoachPreferencesTable coachPreferences = $CoachPreferencesTable(
+    this,
+  );
   late final Index sessionExercisesExercise = Index(
     'session_exercises_exercise',
     'CREATE INDEX session_exercises_exercise ON session_exercises (exercise_id)',
@@ -12755,6 +13741,8 @@ abstract class _$ForjaDatabase extends GeneratedDatabase {
     recipes,
     recipeIngredients,
     nutritionGoalsTable,
+    coachDecisions,
+    coachPreferences,
     sessionExercisesExercise,
     foodEntriesDateKey,
     setLogsExercise,
@@ -19425,6 +20413,7 @@ typedef $$FoodFavoritesTableCreateCompanionBuilder =
       Value<double?> proteinG,
       Value<double?> carbsG,
       Value<double?> fatG,
+      Value<CaloriesSource> caloriesSource,
       Value<int> rowid,
     });
 typedef $$FoodFavoritesTableUpdateCompanionBuilder =
@@ -19438,6 +20427,7 @@ typedef $$FoodFavoritesTableUpdateCompanionBuilder =
       Value<double?> proteinG,
       Value<double?> carbsG,
       Value<double?> fatG,
+      Value<CaloriesSource> caloriesSource,
       Value<int> rowid,
     });
 
@@ -19494,6 +20484,12 @@ class $$FoodFavoritesTableFilterComposer
     column: $table.fatG,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<CaloriesSource, CaloriesSource, String>
+  get caloriesSource => $composableBuilder(
+    column: $table.caloriesSource,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 }
 
 class $$FoodFavoritesTableOrderingComposer
@@ -19549,6 +20545,11 @@ class $$FoodFavoritesTableOrderingComposer
     column: $table.fatG,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get caloriesSource => $composableBuilder(
+    column: $table.caloriesSource,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$FoodFavoritesTableAnnotationComposer
@@ -19586,6 +20587,12 @@ class $$FoodFavoritesTableAnnotationComposer
 
   GeneratedColumn<double> get fatG =>
       $composableBuilder(column: $table.fatG, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<CaloriesSource, String> get caloriesSource =>
+      $composableBuilder(
+        column: $table.caloriesSource,
+        builder: (column) => column,
+      );
 }
 
 class $$FoodFavoritesTableTableManager
@@ -19630,6 +20637,7 @@ class $$FoodFavoritesTableTableManager
                 Value<double?> proteinG = const Value.absent(),
                 Value<double?> carbsG = const Value.absent(),
                 Value<double?> fatG = const Value.absent(),
+                Value<CaloriesSource> caloriesSource = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FoodFavoritesCompanion(
                 id: id,
@@ -19641,6 +20649,7 @@ class $$FoodFavoritesTableTableManager
                 proteinG: proteinG,
                 carbsG: carbsG,
                 fatG: fatG,
+                caloriesSource: caloriesSource,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -19654,6 +20663,7 @@ class $$FoodFavoritesTableTableManager
                 Value<double?> proteinG = const Value.absent(),
                 Value<double?> carbsG = const Value.absent(),
                 Value<double?> fatG = const Value.absent(),
+                Value<CaloriesSource> caloriesSource = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => FoodFavoritesCompanion.insert(
                 id: id,
@@ -19665,6 +20675,7 @@ class $$FoodFavoritesTableTableManager
                 proteinG: proteinG,
                 carbsG: carbsG,
                 fatG: fatG,
+                caloriesSource: caloriesSource,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -20701,6 +21712,523 @@ typedef $$NutritionGoalsTableTableProcessedTableManager =
       GoalsRow,
       PrefetchHooks Function()
     >;
+typedef $$CoachDecisionsTableCreateCompanionBuilder =
+    CoachDecisionsCompanion Function({
+      required String id,
+      required int seq,
+      required String recKey,
+      required String ruleId,
+      required String kbVersion,
+      required String subject,
+      required String anchor,
+      required CoachDecisionStatus status,
+      required DateTime decidedAt,
+      required String summary,
+      Value<int> rowid,
+    });
+typedef $$CoachDecisionsTableUpdateCompanionBuilder =
+    CoachDecisionsCompanion Function({
+      Value<String> id,
+      Value<int> seq,
+      Value<String> recKey,
+      Value<String> ruleId,
+      Value<String> kbVersion,
+      Value<String> subject,
+      Value<String> anchor,
+      Value<CoachDecisionStatus> status,
+      Value<DateTime> decidedAt,
+      Value<String> summary,
+      Value<int> rowid,
+    });
+
+class $$CoachDecisionsTableFilterComposer
+    extends Composer<_$ForjaDatabase, $CoachDecisionsTable> {
+  $$CoachDecisionsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get recKey => $composableBuilder(
+    column: $table.recKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get kbVersion => $composableBuilder(
+    column: $table.kbVersion,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get subject => $composableBuilder(
+    column: $table.subject,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get anchor => $composableBuilder(
+    column: $table.anchor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<
+    CoachDecisionStatus,
+    CoachDecisionStatus,
+    String
+  >
+  get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CoachDecisionsTableOrderingComposer
+    extends Composer<_$ForjaDatabase, $CoachDecisionsTable> {
+  $$CoachDecisionsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get recKey => $composableBuilder(
+    column: $table.recKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleId => $composableBuilder(
+    column: $table.ruleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kbVersion => $composableBuilder(
+    column: $table.kbVersion,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get subject => $composableBuilder(
+    column: $table.subject,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get anchor => $composableBuilder(
+    column: $table.anchor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get decidedAt => $composableBuilder(
+    column: $table.decidedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get summary => $composableBuilder(
+    column: $table.summary,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CoachDecisionsTableAnnotationComposer
+    extends Composer<_$ForjaDatabase, $CoachDecisionsTable> {
+  $$CoachDecisionsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+
+  GeneratedColumn<String> get recKey =>
+      $composableBuilder(column: $table.recKey, builder: (column) => column);
+
+  GeneratedColumn<String> get ruleId =>
+      $composableBuilder(column: $table.ruleId, builder: (column) => column);
+
+  GeneratedColumn<String> get kbVersion =>
+      $composableBuilder(column: $table.kbVersion, builder: (column) => column);
+
+  GeneratedColumn<String> get subject =>
+      $composableBuilder(column: $table.subject, builder: (column) => column);
+
+  GeneratedColumn<String> get anchor =>
+      $composableBuilder(column: $table.anchor, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<CoachDecisionStatus, String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get decidedAt =>
+      $composableBuilder(column: $table.decidedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get summary =>
+      $composableBuilder(column: $table.summary, builder: (column) => column);
+}
+
+class $$CoachDecisionsTableTableManager
+    extends
+        RootTableManager<
+          _$ForjaDatabase,
+          $CoachDecisionsTable,
+          CoachDecisionRow,
+          $$CoachDecisionsTableFilterComposer,
+          $$CoachDecisionsTableOrderingComposer,
+          $$CoachDecisionsTableAnnotationComposer,
+          $$CoachDecisionsTableCreateCompanionBuilder,
+          $$CoachDecisionsTableUpdateCompanionBuilder,
+          (
+            CoachDecisionRow,
+            BaseReferences<
+              _$ForjaDatabase,
+              $CoachDecisionsTable,
+              CoachDecisionRow
+            >,
+          ),
+          CoachDecisionRow,
+          PrefetchHooks Function()
+        > {
+  $$CoachDecisionsTableTableManager(
+    _$ForjaDatabase db,
+    $CoachDecisionsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CoachDecisionsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CoachDecisionsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CoachDecisionsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<int> seq = const Value.absent(),
+                Value<String> recKey = const Value.absent(),
+                Value<String> ruleId = const Value.absent(),
+                Value<String> kbVersion = const Value.absent(),
+                Value<String> subject = const Value.absent(),
+                Value<String> anchor = const Value.absent(),
+                Value<CoachDecisionStatus> status = const Value.absent(),
+                Value<DateTime> decidedAt = const Value.absent(),
+                Value<String> summary = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoachDecisionsCompanion(
+                id: id,
+                seq: seq,
+                recKey: recKey,
+                ruleId: ruleId,
+                kbVersion: kbVersion,
+                subject: subject,
+                anchor: anchor,
+                status: status,
+                decidedAt: decidedAt,
+                summary: summary,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required int seq,
+                required String recKey,
+                required String ruleId,
+                required String kbVersion,
+                required String subject,
+                required String anchor,
+                required CoachDecisionStatus status,
+                required DateTime decidedAt,
+                required String summary,
+                Value<int> rowid = const Value.absent(),
+              }) => CoachDecisionsCompanion.insert(
+                id: id,
+                seq: seq,
+                recKey: recKey,
+                ruleId: ruleId,
+                kbVersion: kbVersion,
+                subject: subject,
+                anchor: anchor,
+                status: status,
+                decidedAt: decidedAt,
+                summary: summary,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CoachDecisionsTable, CoachDecisionRow>(table),
+                  BaseReferences<
+                    _$ForjaDatabase,
+                    $CoachDecisionsTable,
+                    CoachDecisionRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CoachDecisionsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ForjaDatabase,
+      $CoachDecisionsTable,
+      CoachDecisionRow,
+      $$CoachDecisionsTableFilterComposer,
+      $$CoachDecisionsTableOrderingComposer,
+      $$CoachDecisionsTableAnnotationComposer,
+      $$CoachDecisionsTableCreateCompanionBuilder,
+      $$CoachDecisionsTableUpdateCompanionBuilder,
+      (
+        CoachDecisionRow,
+        BaseReferences<_$ForjaDatabase, $CoachDecisionsTable, CoachDecisionRow>,
+      ),
+      CoachDecisionRow,
+      PrefetchHooks Function()
+    >;
+typedef $$CoachPreferencesTableCreateCompanionBuilder =
+    CoachPreferencesCompanion Function({
+      required String family,
+      required int seq,
+      required bool muted,
+      required DateTime updatedAt,
+      Value<int> rowid,
+    });
+typedef $$CoachPreferencesTableUpdateCompanionBuilder =
+    CoachPreferencesCompanion Function({
+      Value<String> family,
+      Value<int> seq,
+      Value<bool> muted,
+      Value<DateTime> updatedAt,
+      Value<int> rowid,
+    });
+
+class $$CoachPreferencesTableFilterComposer
+    extends Composer<_$ForjaDatabase, $CoachPreferencesTable> {
+  $$CoachPreferencesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get family => $composableBuilder(
+    column: $table.family,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get muted => $composableBuilder(
+    column: $table.muted,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CoachPreferencesTableOrderingComposer
+    extends Composer<_$ForjaDatabase, $CoachPreferencesTable> {
+  $$CoachPreferencesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get family => $composableBuilder(
+    column: $table.family,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get seq => $composableBuilder(
+    column: $table.seq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get muted => $composableBuilder(
+    column: $table.muted,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CoachPreferencesTableAnnotationComposer
+    extends Composer<_$ForjaDatabase, $CoachPreferencesTable> {
+  $$CoachPreferencesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get family =>
+      $composableBuilder(column: $table.family, builder: (column) => column);
+
+  GeneratedColumn<int> get seq =>
+      $composableBuilder(column: $table.seq, builder: (column) => column);
+
+  GeneratedColumn<bool> get muted =>
+      $composableBuilder(column: $table.muted, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+}
+
+class $$CoachPreferencesTableTableManager
+    extends
+        RootTableManager<
+          _$ForjaDatabase,
+          $CoachPreferencesTable,
+          CoachPreferenceRow,
+          $$CoachPreferencesTableFilterComposer,
+          $$CoachPreferencesTableOrderingComposer,
+          $$CoachPreferencesTableAnnotationComposer,
+          $$CoachPreferencesTableCreateCompanionBuilder,
+          $$CoachPreferencesTableUpdateCompanionBuilder,
+          (
+            CoachPreferenceRow,
+            BaseReferences<
+              _$ForjaDatabase,
+              $CoachPreferencesTable,
+              CoachPreferenceRow
+            >,
+          ),
+          CoachPreferenceRow,
+          PrefetchHooks Function()
+        > {
+  $$CoachPreferencesTableTableManager(
+    _$ForjaDatabase db,
+    $CoachPreferencesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CoachPreferencesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CoachPreferencesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CoachPreferencesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> family = const Value.absent(),
+                Value<int> seq = const Value.absent(),
+                Value<bool> muted = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CoachPreferencesCompanion(
+                family: family,
+                seq: seq,
+                muted: muted,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String family,
+                required int seq,
+                required bool muted,
+                required DateTime updatedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CoachPreferencesCompanion.insert(
+                family: family,
+                seq: seq,
+                muted: muted,
+                updatedAt: updatedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CoachPreferencesTable, CoachPreferenceRow>(
+                    table,
+                  ),
+                  BaseReferences<
+                    _$ForjaDatabase,
+                    $CoachPreferencesTable,
+                    CoachPreferenceRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CoachPreferencesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$ForjaDatabase,
+      $CoachPreferencesTable,
+      CoachPreferenceRow,
+      $$CoachPreferencesTableFilterComposer,
+      $$CoachPreferencesTableOrderingComposer,
+      $$CoachPreferencesTableAnnotationComposer,
+      $$CoachPreferencesTableCreateCompanionBuilder,
+      $$CoachPreferencesTableUpdateCompanionBuilder,
+      (
+        CoachPreferenceRow,
+        BaseReferences<
+          _$ForjaDatabase,
+          $CoachPreferencesTable,
+          CoachPreferenceRow
+        >,
+      ),
+      CoachPreferenceRow,
+      PrefetchHooks Function()
+    >;
 
 class $ForjaDatabaseManager {
   final _$ForjaDatabase _db;
@@ -20753,4 +22281,8 @@ class $ForjaDatabaseManager {
       $$RecipeIngredientsTableTableManager(_db, _db.recipeIngredients);
   $$NutritionGoalsTableTableTableManager get nutritionGoalsTable =>
       $$NutritionGoalsTableTableTableManager(_db, _db.nutritionGoalsTable);
+  $$CoachDecisionsTableTableManager get coachDecisions =>
+      $$CoachDecisionsTableTableManager(_db, _db.coachDecisions);
+  $$CoachPreferencesTableTableManager get coachPreferences =>
+      $$CoachPreferencesTableTableManager(_db, _db.coachPreferences);
 }

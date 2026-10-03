@@ -45,6 +45,53 @@ class TrainingRules {
     );
   }
 
+  /// The prescription the progression rules compare with (D41a): on the
+  /// example plan, the one the screen shows after adapting it to the profile
+  /// (beginner 2 sets and 3 reps in reserve; muscle 8–12 reps; fitness 12–15),
+  /// without the day's lighter-session adjustment. A plan of one's own is
+  /// taken as written.
+  static PlanExercise effectivePlanned(
+    PlanExercise planned,
+    Exercise exercise,
+    UserProfile profile, {
+    required bool adaptToProfile,
+  }) {
+    if (!adaptToProfile) return planned;
+    var result = planned;
+    if (profile.experience == Experience.beginner) {
+      result = result.copyWith(sets: 2, rir: 3);
+    }
+    if (exercise.loadType != LoadType.time) {
+      result = switch (profile.goal) {
+        TrainingGoal.strength => result,
+        TrainingGoal.muscle => result.copyWith(repsMin: 8, repsMax: 12),
+        TrainingGoal.fitness => result.copyWith(repsMin: 12, repsMax: 15),
+      };
+    }
+    return result;
+  }
+
+  /// Whether today's lighter session is proposed (D41b). Tiredness or
+  /// soreness today always propose it. A low habitual energy alone does not
+  /// on a generated plan that already asks for 3 reps in reserve everywhere:
+  /// the generator lightened it already, and lightening it every day again
+  /// would count the same thing twice.
+  static bool lighterSessionProposed(
+    UserProfile profile,
+    Feeling? feeling, {
+    Routine? routine,
+    PlanSource? source,
+  }) {
+    if (!needsLighterSession(profile, feeling)) return false;
+    if (feeling == Feeling.tired || feeling == Feeling.doms) return true;
+    final alreadyLight =
+        source == PlanSource.generated &&
+        routine != null &&
+        routine.exercises.isNotEmpty &&
+        routine.exercises.every((e) => e.rir >= 3);
+    return !alreadyLight;
+  }
+
   /// Low energy, tiredness or soreness propose a lighter session. An injury
   /// is not "tired": it pauses training instead (see [recommendation]).
   static bool needsLighterSession(UserProfile profile, Feeling? feeling) =>
@@ -53,16 +100,19 @@ class TrainingRules {
           feeling == Feeling.tired ||
           feeling == Feeling.doms);
 
+  /// [lighter] says whether the lighter session is proposed today (see
+  /// [lighterSessionProposed]); by default, whenever [needsLighterSession].
   static String? recommendation(
     UserProfile profile,
     Feeling? feeling, {
     bool adaptToProfile = false,
     bool adjust = true,
+    bool? lighter,
   }) {
     if (feeling == Feeling.injured) {
       return 'Si hay lesión o dolor, pausa la sesión y busca valoración profesional.';
     }
-    if (needsLighterSession(profile, feeling)) {
+    if (lighter ?? needsLighterSession(profile, feeling)) {
       return adjust
           ? 'Intensidad ajustada: menos series y 3 repeticiones en reserva.'
           : 'Ajuste de intensidad quitado: sigues el plan tal como está.';

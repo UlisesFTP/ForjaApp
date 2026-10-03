@@ -140,6 +140,11 @@ class NutritionViewModel extends ViewModel {
         proteinG: e.proteinG,
         carbsG: e.carbsG,
         fatG: e.fatG,
+        // The favorite keeps where its calories came from (an estimate stays
+        // an estimate). A recipe's portion is saved as a plain number.
+        caloriesSource: e.caloriesSource == CaloriesSource.recipe
+            ? CaloriesSource.manual
+            : e.caloriesSource,
       ),
     ),
     success: 'Guardado en favoritos',
@@ -157,6 +162,7 @@ class NutritionViewModel extends ViewModel {
         proteinG: f.proteinG,
         carbsG: f.carbsG,
         fatG: f.fatG,
+        caloriesSource: f.caloriesSource,
       ),
     ),
     success: '${f.name} añadido',

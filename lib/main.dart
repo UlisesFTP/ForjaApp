@@ -4,6 +4,9 @@ import 'package:flutter/services.dart';
 
 import 'app/app_dependencies.dart';
 import 'app/forja_app.dart';
+import 'data/services/ai/openai_compatible_client.dart';
+import 'data/services/ai/platform_secret_store.dart';
+import 'data/services/ai/prefs_ai_settings_store.dart';
 import 'data/services/local_notification_service.dart';
 
 void main() {
@@ -11,10 +14,14 @@ void main() {
   registerFontLicenses();
   runApp(
     ForjaBootstrap(
-      // Production wires the native notifications; tests use no-op ones.
+      // Production wires the native notifications and the optional
+      // assistant (off until the person turns it on); tests use no-op ones.
       create: ({bool skipLegacyImport = false}) => AppDependencies.create(
         skipLegacyImport: skipLegacyImport,
         notifications: LocalNotificationService(),
+        aiClient: OpenAiCompatibleClient(),
+        secrets: PlatformSecretStore(),
+        aiSettings: PrefsAiSettingsStore(),
       ),
     ),
   );

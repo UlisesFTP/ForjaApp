@@ -2,9 +2,14 @@
     <!-- Local reminders: reschedule them after a reboot or an app update.
          Inexact scheduling is used, so no exact-alarm permission is needed. -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <!-- Only for the optional AI assistant (D38), off by default: nothing
+         goes out until the person turns it on, consents and asks something.
+         Tutorials open in the phone's own browser or YouTube. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:allowBackup="false"
         android:fullBackupContent="false"
+        android:dataExtractionRules="@xml/data_extraction_rules"
         android:label="FORJA"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

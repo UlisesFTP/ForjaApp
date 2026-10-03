@@ -14,7 +14,10 @@ String gramsText(double v) =>
     v == v.roundToDouble() ? '${v.toInt()}' : v.toStringAsFixed(1);
 
 class NutritionView extends StatelessWidget {
-  const NutritionView({super.key, required this.vm});
+  const NutritionView({super.key, required this.vm, this.assist});
+
+  /// "Describir comida (IA)" in the add form, when the assistant is on.
+  final MealAssist? assist;
   final NutritionViewModel vm;
 
   @override
@@ -69,7 +72,7 @@ class NutritionView extends StatelessWidget {
             children: [
               FilledButton.icon(
                 key: const ValueKey('add-food'),
-                onPressed: () => showFoodForm(context, vm),
+                onPressed: () => showFoodForm(context, vm, assist: assist),
                 icon: const Icon(Icons.add),
                 label: const Text('Añadir alimento'),
               ),
@@ -205,6 +208,7 @@ class NutritionView extends StatelessWidget {
       if (e.caloriesSource == CaloriesSource.macros)
         'kcal calculadas desde macros',
       if (e.caloriesSource == CaloriesSource.recipe) 'de una receta',
+      if (e.caloriesSource == CaloriesSource.estimated) 'kcal estimadas (IA)',
     ];
     return parts.join(' · ');
   }

@@ -261,7 +261,8 @@ void main() {
         BackupCodec.encode(o.repo.snapshot, createdAt: now, schema: 6),
       );
       expect(file['format'], 'forja-backup');
-      expect(file['version'], 1);
+      // Version 2 since schema 7 (D40).
+      expect(file['version'], 2);
       expect((file['checksum'] as Map)['algorithm'], 'sha256');
       expect(((file['checksum'] as Map)['value'] as String).length, 64);
       expect(file['counts'], isA<Map>());
@@ -368,7 +369,7 @@ void main() {
     test(
       'a newer version is refused with an update message; invalid versions too',
       () {
-        final f = parse(good)..['version'] = 2;
+        final f = parse(good)..['version'] = backupVersion + 1;
         final e = refuse(bytes(jsonEncode(f)));
         expect(e.problem, BackupProblem.futureVersion);
         expect(e.message, contains('Actualiza'));

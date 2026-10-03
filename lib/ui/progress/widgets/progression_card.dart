@@ -34,6 +34,8 @@ class ProgressionCard extends StatelessWidget {
     final s = suggestion, unit = WeightUnit.kg;
     final decision = vm.decisionFor(s);
     final working = vm.workingWeight(s.exerciseId);
+    // A recent injury, pain or a long break holds the increase back (D41c).
+    final veto = decision == null ? vm.vetoFor(s) : null;
     return SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -93,6 +95,15 @@ class ProgressionCard extends StatelessWidget {
                   ? 'Aceptaste este aumento el ${shortDate(decision.decidedAt.toLocal())}.'
                   : 'Rechazaste esta sugerencia el ${shortDate(decision.decidedAt.toLocal())}.',
               style: const TextStyle(fontWeight: FontWeight.w600),
+            )
+          else if (veto != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(
+                'Sin aumento: ${veto.reason}',
+                key: ValueKey('veto-${s.exerciseId}'),
+                style: const TextStyle(fontWeight: FontWeight.w600),
+              ),
             )
           else if (s.actionable)
             Padding(

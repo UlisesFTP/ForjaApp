@@ -14,10 +14,14 @@ class PlanView extends StatelessWidget {
     required this.vm,
     required this.onDate,
     required this.onEdit,
+    this.onReview,
   });
   final PlanViewModel vm;
   final ValueChanged<DateTime> onDate;
   final VoidCallback onEdit;
+
+  /// Opens the minicoach's review of the plan (F16).
+  final VoidCallback? onReview;
 
   @override
   Widget build(BuildContext context) => VmObserver(
@@ -29,7 +33,7 @@ class PlanView extends StatelessWidget {
       ),
       // The plan in use and its draft beside the week.
       primary: [
-        _ActivePlan(vm: vm, onEdit: onEdit),
+        _ActivePlan(vm: vm, onEdit: onEdit, onReview: onReview),
         if (vm.draft != null) _DraftCard(vm: vm, onEdit: onEdit),
       ],
       secondary: [
@@ -124,9 +128,10 @@ class PlanView extends StatelessWidget {
 }
 
 class _ActivePlan extends StatelessWidget {
-  const _ActivePlan({required this.vm, required this.onEdit});
+  const _ActivePlan({required this.vm, required this.onEdit, this.onReview});
   final PlanViewModel vm;
   final VoidCallback onEdit;
+  final VoidCallback? onReview;
   @override
   Widget build(BuildContext context) {
     final plan = vm.activePlan;
@@ -160,6 +165,13 @@ class _ActivePlan extends StatelessWidget {
                 icon: const Icon(Icons.auto_fix_high),
                 label: const Text('Generar desde mi perfil'),
               ),
+              if (onReview != null)
+                OutlinedButton.icon(
+                  key: const ValueKey('plan-review'),
+                  onPressed: onReview,
+                  icon: const Icon(Icons.fact_check_outlined),
+                  label: const Text('Revisión del plan'),
+                ),
             ],
           ),
           if (vm.proposal != null && !vm.proposal!.ok)

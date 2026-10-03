@@ -17,11 +17,50 @@ import 'package:forja_app/app/forja_app.dart';
 import 'package:forja_app/data/services/forja_store.dart';
 import 'package:forja_app/data/services/tutorial_launcher.dart';
 import 'package:forja_app/domain/models/models.dart';
+import 'package:forja_app/domain/services/ai/ai_client.dart';
+import 'package:forja_app/domain/services/ai/ai_settings.dart';
+import 'package:forja_app/domain/services/ai/ai_types.dart';
 import 'package:forja_app/ui/shell/view_models/shell_view_model.dart';
 
 class _Launcher implements TutorialLauncher {
   @override
   Future<bool> open(Uri uri) async => true;
+}
+
+/// A local stand-in for the provider, so the chat can be pictured offline:
+/// it proposes a meal, then answers.
+class _DemoClient implements AiChatClient {
+  var _calls = 0;
+  @override
+  Future<AiResponse> complete(
+    AiRequest request,
+    AiEndpoint endpoint, {
+    Future<void>? cancel,
+  }) async {
+    _calls++;
+    final propose = _calls.isOdd && request.tools.isNotEmpty;
+    return AiResponse(
+      message: AiMessage(
+        role: AiRole.assistant,
+        content: propose
+            ? null
+            : 'Dos tacos al pastor rondan las 540 kcal. Te dejo la propuesta '
+                  'para que la revises antes de guardarla.',
+        toolCalls: propose
+            ? const [
+                AiToolCall(
+                  id: 'c1',
+                  name: 'propose_food_entry',
+                  arguments: '{"name":"Tacos al pastor","kcal":540,"proteinG":28,"confidence":"medium"}',
+                ),
+              ]
+            : const [],
+      ),
+      usage: const AiUsage(prompt: 900, completion: 60),
+      model: 'mimo-v2.6-flash',
+      latency: const Duration(milliseconds: 1800),
+    );
+  }
 }
 
 const _defaultSizes = [
@@ -64,6 +103,7 @@ void main() {
         store: MemoryForjaStore(),
         launcher: _Launcher(),
         clock: () => DateTime(2026, 9, 29, 9),
+        aiClient: _DemoClient(),
       );
       addTearDown(() => unawaited(d.dispose()));
       await d.repository.saveProfile(
@@ -132,6 +172,16 @@ void main() {
       );
       await tester.pumpAndSettle();
 
+      Future<void> closeSheet() async {
+        final close = find.byIcon(Icons.close);
+        if (close.evaluate().isNotEmpty) {
+          await tester.tap(close.last, warnIfMissed: false);
+        } else if (find.byType(BottomSheet).evaluate().isNotEmpty) {
+          Navigator.of(tester.element(find.byType(BottomSheet).last)).pop();
+        }
+        await tester.pumpAndSettle();
+      }
+
       Future<void> shot(String name) async {
         final render =
             boundary.currentContext!.findRenderObject()!
@@ -167,7 +217,61 @@ void main() {
         await tester.tap(sets);
         await tester.pumpAndSettle();
         await shot('sheet-sets');
+        await closeSheet();
+        await tester.pumpAndSettle();
       }
+
+      // The minicoach page (F16).
+      d.shell.open(AppPage.today);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.textContaining('Minicoach').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Minicoach').first);
+      await tester.pumpAndSettle();
+      await shot('coach-1');
+      await tester.drag(find.byType(Scrollable).last, const Offset(0, -900));
+      await tester.pumpAndSettle();
+      await shot('coach-2');
+      Navigator.of(tester.element(find.byType(Scaffold).last)).pop();
+      await tester.pumpAndSettle();
+
+      // The assistant's sheet (F17).
+      d.shell.open(AppPage.more);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byKey(const ValueKey('more-ai')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('more-ai')));
+      await tester.pumpAndSettle();
+      await shot('ai-sheet');
+      await closeSheet();
+      await tester.pumpAndSettle();
+
+      // The chat, with the local demo client.
+      await d.ai.saveKey('sk-demo-0000000000000000');
+      await d.ai.accept({...DataCategory.values});
+      await d.ai.setCapabilities(const AiCapabilities(tools: true));
+      d.shell.open(AppPage.today);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.textContaining('Minicoach').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.textContaining('Minicoach').first);
+      await tester.pumpAndSettle();
+      final ask = find.byKey(const ValueKey('coach-ask-ai'));
+      await tester.scrollUntilVisible(
+        ask,
+        200,
+        scrollable: find.byType(Scrollable).last,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(ask);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byKey(const ValueKey('chat-input')),
+        'Comí 2 tacos al pastor',
+      );
+      await tester.tap(find.byKey(const ValueKey('chat-send')));
+      await tester.pumpAndSettle();
+      await shot('chat');
     });
   }
 }

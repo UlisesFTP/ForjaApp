@@ -320,7 +320,7 @@ void main() {
             throwsA(
               isA<DatabaseNewerThanApp>()
                   .having((f) => f.databaseVersion, 'database', 99)
-                  .having((f) => f.appVersion, 'app', 6),
+                  .having((f) => f.appVersion, 'app', currentSchemaVersion),
             ),
           );
         }

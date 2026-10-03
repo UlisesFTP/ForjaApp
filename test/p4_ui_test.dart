@@ -406,7 +406,8 @@ void main() {
         await tester.tap(find.text('Cómo se calcula'));
         await tester.pumpAndSettle();
         expect(find.textContaining('Nunca se aplica sola'), findsOneWidget);
-        expect(find.textContaining('prog-v1'), findsOneWidget);
+        // prog-v2 since D41a (2026-10-02).
+        expect(find.textContaining('prog-v2'), findsOneWidget);
       },
     );
 

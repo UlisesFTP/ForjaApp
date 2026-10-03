@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 
+import '../../domain/services/ai/ai_types.dart';
+
 abstract class ViewModel extends ChangeNotifier {
   bool busy = false;
   String? error;
@@ -36,7 +38,11 @@ abstract class ViewModel extends ChangeNotifier {
       if (success != null) announce(success);
       return true;
     } catch (e) {
-      error = e is ArgumentError
+      // The assistant's failures say what happened with the provider; they
+      // are not a failed save.
+      error = e is AiFailure
+          ? e.message
+          : e is ArgumentError
           ? e.message?.toString()
           : e is StateError
           ? e.message

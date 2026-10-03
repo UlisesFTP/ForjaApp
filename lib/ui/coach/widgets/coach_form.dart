@@ -166,7 +166,7 @@ class _CoachFormState extends State<CoachForm> {
               decoration: const InputDecoration(
                 labelText: 'Peso corporal (opcional)',
                 suffixText: 'kg',
-                helperText: 'Solo para estimar calorías de cardio',
+                helperText: 'Para estimar calorías de cardio y la referencia general de proteína',
               ),
               validator: optionalWeightError,
             ),
@@ -215,7 +215,7 @@ class _CoachFormState extends State<CoachForm> {
             ),
             const SizedBox(height: 10),
             Text(
-              'Las recomendaciones usan reglas simples y locales, no un diagnóstico ni una IA remota.',
+              'El minicoach usa reglas locales y explicables: no es un diagnóstico ni una IA. El asistente IA es opcional y externo (Más → Asistente IA).',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             if (widget.vm.history.isNotEmpty)

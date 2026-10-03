@@ -53,6 +53,8 @@ class DriftForjaStore implements ForjaStore {
     'food_favorites',
     'recipes',
     'nutrition_goals',
+    'coach_decisions',
+    'coach_preferences',
   ];
 
   @override
@@ -161,6 +163,12 @@ class DriftForjaStore implements ForjaStore {
     final goalsRow = await _db
         .select(_db.nutritionGoalsTable)
         .getSingleOrNull();
+    final coachDecisionRows = await (_db.select(
+      _db.coachDecisions,
+    )..orderBy([(t) => OrderingTerm.asc(t.seq)])).get();
+    final coachPreferenceRows = await (_db.select(
+      _db.coachPreferences,
+    )..orderBy([(t) => OrderingTerm.asc(t.seq)])).get();
     final ingredients = <String, List<Ingredient>>{};
     for (final r in ingredientRows) {
       final list = ingredients.putIfAbsent(r.recipeId, () => []);
@@ -364,6 +372,29 @@ class DriftForjaStore implements ForjaStore {
             proteinG: f.proteinG,
             carbsG: f.carbsG,
             fatG: f.fatG,
+            caloriesSource: f.caloriesSource,
+          ),
+      ],
+      coachDecisions: [
+        for (final d in coachDecisionRows)
+          CoachDecision(
+            id: d.id,
+            recKey: d.recKey,
+            ruleId: d.ruleId,
+            kbVersion: d.kbVersion,
+            subject: d.subject,
+            anchor: d.anchor,
+            status: d.status,
+            decidedAt: d.decidedAt.toUtc(),
+            summary: d.summary,
+          ),
+      ],
+      coachPreferences: [
+        for (final p in coachPreferenceRows)
+          CoachPreference(
+            family: p.family,
+            muted: p.muted,
+            updatedAt: p.updatedAt.toUtc(),
           ),
       ],
       recipes: [
@@ -946,6 +977,7 @@ class DriftForjaStore implements ForjaStore {
                 proteinG: Value(f.proteinG),
                 carbsG: Value(f.carbsG),
                 fatG: Value(f.fatG),
+                caloriesSource: Value(f.caloriesSource),
               ),
             );
       } else {
@@ -960,6 +992,7 @@ class DriftForjaStore implements ForjaStore {
             proteinG: Value(f.proteinG),
             carbsG: Value(f.carbsG),
             fatG: Value(f.fatG),
+            caloriesSource: Value(f.caloriesSource),
           ),
         );
       }
@@ -1135,7 +1168,8 @@ class DriftForjaStore implements ForjaStore {
     }
   }
 
-  // Append-only logs: progression decisions and monthly reviews.
+  // Append-only logs (progression and coach decisions, monthly reviews) and
+  // the coach's silenced families.
   Future<void> _writeDecisions(SnapshotChanges c) async {
     if (c.progressionDecisions.isNotEmpty) {
       var seq = await _nextSeq(
@@ -1159,6 +1193,56 @@ class DriftForjaStore implements ForjaStore {
                 toKg: Value(d.toKg),
               ),
             );
+      }
+    }
+    if (c.coachDecisions.isNotEmpty) {
+      var seq = await _nextSeq(_db.coachDecisions, _db.coachDecisions.seq);
+      for (final d in c.coachDecisions) {
+        await _db
+            .into(_db.coachDecisions)
+            .insert(
+              CoachDecisionsCompanion.insert(
+                id: d.id,
+                seq: seq++,
+                recKey: d.recKey,
+                ruleId: d.ruleId,
+                kbVersion: d.kbVersion,
+                subject: d.subject,
+                anchor: d.anchor,
+                status: d.status,
+                decidedAt: d.decidedAt.toUtc(),
+                summary: d.summary,
+              ),
+            );
+      }
+    }
+    for (final p in c.coachPreferences) {
+      final exists = await (_db.select(
+        _db.coachPreferences,
+      )..where((t) => t.family.equals(p.family))).getSingleOrNull();
+      if (exists == null) {
+        await _db
+            .into(_db.coachPreferences)
+            .insert(
+              CoachPreferencesCompanion.insert(
+                family: p.family,
+                seq: await _nextSeq(
+                  _db.coachPreferences,
+                  _db.coachPreferences.seq,
+                ),
+                muted: p.muted,
+                updatedAt: p.updatedAt.toUtc(),
+              ),
+            );
+      } else {
+        await (_db.update(
+          _db.coachPreferences,
+        )..where((t) => t.family.equals(p.family))).write(
+          CoachPreferencesCompanion(
+            muted: Value(p.muted),
+            updatedAt: Value(p.updatedAt.toUtc()),
+          ),
+        );
       }
     }
     if (c.reviews.isNotEmpty) {

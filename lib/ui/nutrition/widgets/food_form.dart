@@ -16,23 +16,55 @@ import '../view_models/nutrition_view_model.dart';
       : (value: v, ok: true);
 }
 
+/// What the food form needs from the optional assistant (F17): whether it
+/// can be asked now, and a way to ask it. The form never talks to the
+/// network itself.
+class MealAssist {
+  const MealAssist({
+    required this.listenable,
+    required this.available,
+    required this.describe,
+  });
+
+  /// Changes when the assistant is turned on or off.
+  final Listenable listenable;
+  final bool Function() available;
+
+  /// Opens "Describir comida (IA)" and returns the values to fill in.
+  final Future<FoodDraft?> Function(BuildContext context) describe;
+}
+
 Future<void> showFoodForm(
   BuildContext context,
   NutritionViewModel vm, {
   FoodEntry? entry,
+  MealAssist? assist,
+  FoodDraft? initial,
 }) => showForjaSheet<void>(
   context,
   title: entry == null ? 'Añadir alimento' : 'Editar alimento',
-  child: FoodForm(vm: vm, entry: entry),
+  child: FoodForm(vm: vm, entry: entry, assist: assist, initial: initial),
 );
 
 /// Name, calories, optional portion and macros. Calories typed by hand are
 /// the person's own number; "Calcular desde macros" fills them in visibly and
 /// the entry then says where they came from.
 class FoodForm extends StatefulWidget {
-  const FoodForm({super.key, required this.vm, this.entry});
+  const FoodForm({
+    super.key,
+    required this.vm,
+    this.entry,
+    this.assist,
+    this.initial,
+  });
   final NutritionViewModel vm;
   final FoodEntry? entry;
+
+  /// Values to start a new entry with (an assistant's proposal, F17).
+  final FoodDraft? initial;
+
+  /// Offered when adding a food, if the assistant is on.
+  final MealAssist? assist;
   @override
   State<FoodForm> createState() => _FoodFormState();
 }
@@ -64,9 +96,23 @@ class _FoodFormState extends State<FoodForm> {
     protein = TextEditingController(text: _text(e?.proteinG));
     carbs = TextEditingController(text: _text(e?.carbsG));
     fat = TextEditingController(text: _text(e?.fatG));
-    source = e?.caloriesSource == CaloriesSource.macros
-        ? CaloriesSource.macros
-        : CaloriesSource.manual;
+    source = switch (e?.caloriesSource) {
+      CaloriesSource.macros => CaloriesSource.macros,
+      CaloriesSource.estimated => CaloriesSource.estimated,
+      _ => CaloriesSource.manual,
+    };
+    final i = widget.initial;
+    if (e == null && i != null) {
+      name.text = i.name;
+      calories.text = '${i.calories}';
+      portion.text = _text(i.portion);
+      unit.text = i.unit ?? '';
+      protein.text = _text(i.proteinG);
+      carbs.text = _text(i.carbsG);
+      fat.text = _text(i.fatG);
+      source = i.source;
+      _estimatedKcal = i.calories;
+    }
   }
 
   @override
@@ -82,6 +128,32 @@ class _FoodFormState extends State<FoodForm> {
     if (!p.ok) return 'Escribe un número';
     final v = p.value;
     return v != null && (v < 0 || v > 2000) ? '0–2000 g' : null;
+  }
+
+  /// The calories are still the estimate they started as.
+  // The calories an estimate came with: kept as an estimate while unchanged.
+  late int? _estimatedKcal = widget.entry?.calories;
+
+  bool get _estimateKept =>
+      source == CaloriesSource.estimated &&
+      calories.text.trim() == '$_estimatedKcal';
+
+  String _number(double? v) =>
+      v == null ? '' : (v == v.roundToDouble() ? '${v.toInt()}' : '$v');
+
+  /// Fills the form with the assistant's estimate; nothing is saved.
+  Future<void> _describe() async {
+    final draft = await widget.assist!.describe(context);
+    if (draft == null || !mounted) return;
+    setState(() {
+      name.text = draft.name;
+      calories.text = '${draft.calories}';
+      protein.text = _number(draft.proteinG);
+      carbs.text = _number(draft.carbsG);
+      fat.text = _number(draft.fatG);
+      source = CaloriesSource.estimated;
+      _estimatedKcal = draft.calories;
+    });
   }
 
   void _fromMacros() {
@@ -108,10 +180,15 @@ class _FoodFormState extends State<FoodForm> {
     final p = parseOptional(protein.text), c = parseOptional(carbs.text);
     final f = parseOptional(fat.text), q = parseOptional(portion.text);
     final kcal = int.parse(calories.text.trim());
-    // Calories edited after being calculated are the person's own again.
+    // Calories edited after being calculated are the person's own again. An
+    // estimate stays an estimate while its calories are untouched: editing
+    // the name or the portion does not turn it into the person's number
+    // (D40).
     final derived = caloriesFromMacros(p.value, c.value, f.value);
     final effective = source == CaloriesSource.macros && derived == kcal
         ? CaloriesSource.macros
+        : _estimateKept
+        ? CaloriesSource.estimated
         : widget.entry?.caloriesSource == CaloriesSource.recipe
         ? CaloriesSource.recipe
         : CaloriesSource.manual;
@@ -144,6 +221,21 @@ class _FoodFormState extends State<FoodForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          if (widget.assist != null && widget.entry == null)
+            ListenableBuilder(
+              listenable: widget.assist!.listenable,
+              builder: (context, _) => widget.assist!.available()
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: OutlinedButton.icon(
+                        key: const ValueKey('food-describe'),
+                        onPressed: widget.vm.busy ? null : _describe,
+                        icon: const Icon(Icons.cloud_outlined),
+                        label: const Text('Describir comida (IA)'),
+                      ),
+                    )
+                  : const SizedBox.shrink(),
+            ),
           TextFormField(
             key: const ValueKey('food-name'),
             controller: name,
@@ -162,6 +254,8 @@ class _FoodFormState extends State<FoodForm> {
               labelText: 'Calorías (kcal)',
               helperText: source == CaloriesSource.macros
                   ? 'Calculadas desde los macros: 4·proteína + 4·carbohidratos + 9·grasa'
+                  : _estimateKept
+                  ? 'Estimadas por el asistente (IA): si escribes otras, pasan a ser tuyas'
                   : 'Tu número manda: no se cambia solo',
             ),
             onChanged: (_) => setState(() {}),

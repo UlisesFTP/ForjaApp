@@ -656,8 +656,10 @@ class CheckIn {
 }
 
 /// Where an entry's calories came from. A manual number is explicit data and
-/// is never overwritten; one worked out from macros says so.
-enum CaloriesSource { manual, macros, recipe }
+/// is never overwritten; one worked out from macros says so. [estimated] is
+/// an external assistant's estimate the person confirmed (D38, D40): it
+/// stays labelled as an estimate until the person types other calories.
+enum CaloriesSource { manual, macros, recipe, estimated }
 
 class FoodEntry {
   const FoodEntry({
@@ -735,7 +737,8 @@ int? caloriesFromMacros(double? protein, double? carbs, double? fat) =>
     ? null
     : (4 * protein + 4 * carbs + 9 * fat).round();
 
-/// A food saved to log again in one tap.
+/// A food saved to log again in one tap. It keeps where its calories came
+/// from, so an estimate never turns into the person's own number (D40).
 class FavoriteFood {
   const FavoriteFood({
     required this.id,
@@ -746,12 +749,14 @@ class FavoriteFood {
     this.proteinG,
     this.carbsG,
     this.fatG,
+    this.caloriesSource = CaloriesSource.manual,
   });
   final String id, name;
   final int calories;
   final double? portion;
   final String? unit;
   final double? proteinG, carbsG, fatG;
+  final CaloriesSource caloriesSource;
   Map<String, dynamic> toJson() => {
     'id': id,
     'name': name,
@@ -761,6 +766,7 @@ class FavoriteFood {
     'proteinG': proteinG,
     'carbsG': carbsG,
     'fatG': fatG,
+    'caloriesSource': caloriesSource.name,
   };
 }
 
@@ -892,6 +898,65 @@ class NutritionGoals {
   };
 }
 
+enum CoachDecisionStatus { accepted, dismissed }
+
+/// What the person did with an expert-system recommendation (F16, D40).
+/// Append-only: accepting is final for a recommendation; "Ahora no" hides
+/// it for a while and can happen again later.
+class CoachDecision {
+  const CoachDecision({
+    required this.id,
+    required this.recKey,
+    required this.ruleId,
+    required this.kbVersion,
+    required this.subject,
+    required this.anchor,
+    required this.status,
+    required this.decidedAt,
+    this.summary = '',
+  });
+  final String id;
+
+  /// `ruleId|subject|anchor`: the recommendation, without rules version.
+  final String recKey;
+  final String ruleId, kbVersion, subject, anchor;
+  final CoachDecisionStatus status;
+  final DateTime decidedAt;
+
+  /// What was recommended, in words, as shown then.
+  final String summary;
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'recKey': recKey,
+    'ruleId': ruleId,
+    'kbVersion': kbVersion,
+    'subject': subject,
+    'anchor': anchor,
+    'status': status.name,
+    'decidedAt': decidedAt.toUtc().toIso8601String(),
+    'summary': summary,
+  };
+}
+
+/// A family of the expert system's advice the person silenced (F16).
+class CoachPreference {
+  const CoachPreference({
+    required this.family,
+    required this.muted,
+    required this.updatedAt,
+  });
+
+  /// The name of a rule family (`safety`, `nutrition`...).
+  final String family;
+  final bool muted;
+  final DateTime updatedAt;
+  Map<String, dynamic> toJson() => {
+    'family': family,
+    'muted': muted,
+    'updatedAt': updatedAt.toUtc().toIso8601String(),
+  };
+}
+
 class ReminderSettings {
   const ReminderSettings({
     this.enabled = false,
@@ -927,6 +992,8 @@ class AppSnapshot {
     List<FavoriteFood> favorites = const [],
     List<Recipe> recipes = const [],
     this.goals = const NutritionGoals(),
+    List<CoachDecision> coachDecisions = const [],
+    List<CoachPreference> coachPreferences = const [],
   }) : sessions = Map.unmodifiable(sessions),
        overrides = Map.unmodifiable(overrides),
        checkIns = Map.unmodifiable(checkIns),
@@ -941,7 +1008,9 @@ class AppSnapshot {
        reviews = List.unmodifiable(reviews),
        cardio = List.unmodifiable(cardio),
        favorites = List.unmodifiable(favorites),
-       recipes = List.unmodifiable(recipes);
+       recipes = List.unmodifiable(recipes),
+       coachDecisions = List.unmodifiable(coachDecisions),
+       coachPreferences = List.unmodifiable(coachPreferences);
   final UserProfile profile;
   final ReminderSettings reminder;
   final Map<String, WorkoutSession> sessions;
@@ -967,6 +1036,10 @@ class AppSnapshot {
   final List<FavoriteFood> favorites;
   final List<Recipe> recipes;
   final NutritionGoals goals;
+  // Append-only, in the order they were made.
+  final List<CoachDecision> coachDecisions;
+  // One per silenced (or unsilenced) family, in the order first set.
+  final List<CoachPreference> coachPreferences;
   AppSnapshot copyWith({
     UserProfile? profile,
     ReminderSettings? reminder,
@@ -986,6 +1059,8 @@ class AppSnapshot {
     List<FavoriteFood>? favorites,
     List<Recipe>? recipes,
     NutritionGoals? goals,
+    List<CoachDecision>? coachDecisions,
+    List<CoachPreference>? coachPreferences,
   }) => AppSnapshot(
     profile: profile ?? this.profile,
     reminder: reminder ?? this.reminder,
@@ -1005,6 +1080,8 @@ class AppSnapshot {
     favorites: favorites ?? this.favorites,
     recipes: recipes ?? this.recipes,
     goals: goals ?? this.goals,
+    coachDecisions: coachDecisions ?? this.coachDecisions,
+    coachPreferences: coachPreferences ?? this.coachPreferences,
   );
 
   /// The exact shape of the 0.1 snapshot, to compare imports with the
@@ -1039,5 +1116,7 @@ class AppSnapshot {
     'favorites': favorites.map((f) => f.toJson()).toList(),
     'recipes': recipes.map((r) => r.toJson()).toList(),
     'goals': goals.toJson(),
+    'coachDecisions': coachDecisions.map((d) => d.toJson()).toList(),
+    'coachPreferences': coachPreferences.map((p) => p.toJson()).toList(),
   };
 }

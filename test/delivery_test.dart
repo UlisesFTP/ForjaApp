@@ -67,10 +67,14 @@ void main() {
           .allMatches(manifest)
           .map((m) => m.group(1))
           .toList();
-      expect(declared, ['android.permission.RECEIVE_BOOT_COMPLETED']);
+      // INTERNET only for the optional assistant, off by default (D38).
+      expect(declared, [
+        'android.permission.RECEIVE_BOOT_COMPLETED',
+        'android.permission.INTERNET',
+      ]);
       for (final forbidden in [
-        'INTERNET',
         'ACCESS_FINE_LOCATION',
+        'ACCESS_NETWORK_STATE',
         'READ_CONTACTS',
         'CAMERA',
         'SCHEDULE_EXACT_ALARM',
@@ -86,6 +90,28 @@ void main() {
       'data stays out of the system backups, receivers are not exported',
       () {
         expect(manifest, contains('android:allowBackup="false"'));
+        // Android 12+: not in cloud backups nor device-to-device transfers,
+        // which allowBackup alone does not stop on some phones (D38).
+        expect(
+          manifest,
+          contains('android:dataExtractionRules="@xml/data_extraction_rules"'),
+        );
+        final rules = read(
+          'android/app/src/main/res/xml/data_extraction_rules.xml',
+        );
+        for (final section in ['cloud-backup', 'device-transfer']) {
+          final body = RegExp(
+            '<$section>(.*?)</$section>',
+            dotAll: true,
+          ).firstMatch(rules)!.group(1)!;
+          for (final domain in ['root', 'file', 'database', 'sharedpref']) {
+            expect(
+              body,
+              contains('<exclude domain="$domain" path="."/>'),
+              reason: '$section $domain',
+            );
+          }
+        }
         for (final receiver in RegExp(
           r'<receiver[^>]*>',
         ).allMatches(manifest)) {
@@ -113,6 +139,10 @@ void main() {
       ),
       'a private key': RegExp(r'BEGIN (RSA |EC )?PRIVATE KEY'),
       'a filled password': RegExp(r'(storePassword|keyPassword)\s*=\s*\S'),
+      // API keys of the assistant's providers (D38): typed only on the phone.
+      'an API key': RegExp(r'\b(sk|tp)-[A-Za-z0-9]{20,}'),
+      'a bearer token': RegExp(r'Bearer [A-Za-z0-9._-]{20,}'),
+      'an API key variable': RegExp(r'(OPENCODE|MIMO)_API_KEY\s*=\s*\S'),
     };
 
     Iterable<File> files() sync* {
@@ -156,6 +186,20 @@ void main() {
     });
   });
 
+  test('no key is built into the app from the command line', () {
+    // A --dart-define value ends up inside the APK; the key is only typed
+    // on the phone (D38).
+    for (final e in Directory('lib').listSync(recursive: true)) {
+      if (e is File && e.path.endsWith('.dart')) {
+        expect(
+          e.readAsStringSync(),
+          isNot(contains('fromEnvironment')),
+          reason: e.path,
+        );
+      }
+    }
+  });
+
   group('version and licences', () {
     test('the version shown on the licences page is the one in pubspec', () {
       final pubspec = RegExp(
@@ -164,6 +208,11 @@ void main() {
       ).firstMatch(read('pubspec.yaml'))!;
       final shell = read('lib/ui/shell/widgets/shell_view.dart');
       expect(shell, contains("applicationVersion: '${pubspec.group(1)}'"));
+      // The assistant's User-Agent says the same version.
+      expect(
+        read('lib/core/app_info.dart'),
+        contains("appVersion = '${pubspec.group(1)}'"),
+      );
     });
 
     testWidgets(

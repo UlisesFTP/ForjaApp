@@ -19,6 +19,8 @@ FORJA es un organizador móvil de rutinas de gimnasio, sin login y con identidad
 - **Copia de seguridad**: exportar JSON versionado con SHA-256, importar reemplazando (vista previa, validación, copia previa privada, transacción) y eliminar todos los datos.
 - Unidad kg/lb solo de visualización (se guarda en kg sin redondear), licencias de código abierto, iconos y pantalla de arranque propios.
 - Fuentes y logo locales. Navbar oscura con droplet (riel lateral con la misma gota en horizontal). Diseño adaptable a teléfonos y tablets en vertical y horizontal (dos columnas cuando caben). Adaptación móvil, controles táctiles, semántica, paneles con cierre visible y movimiento reducido.
+- **Minicoach con sistema experto `expert-v1`** (F16, D37, 2026-10-02): reglas locales y explicables de seguridad, fatiga, progresión, plan, constancia, cardio, nutrición y registro, cada una con su «por qué» y su respaldo; nada se aplica solo. Verificado en host; pendiente en el teléfono.
+- **Asistente IA opcional** (F17, D38, 2026-10-02), desactivado por defecto, con la clave de la propia persona: estimar comidas descritas en texto y chat con herramientas internas de FORJA que solo proponen, con traza de lo consultado. Verificado en host sin red; pendiente la prueba en el teléfono con la clave real.
 
 ## Fuera de 1.0 (por decisión o por requisito del SDD)
 
@@ -34,11 +36,12 @@ FORJA es un organizador móvil de rutinas de gimnasio, sin login y con identidad
 - **iOS completo**: compilación, notificaciones (autorización, límite de 64 pendientes), selector de archivos, exclusión de la base de la copia de iCloud, TalkBack/VoiceOver.
 - **Pruebas de dispositivo sin hacer**: TalkBack/VoiceOver con una persona escuchando. El reinicio del teléfono (los avisos se reprograman solos) y el cardio con la pantalla bloqueada **sí** se verificaron en un Android real (2026-10-02). Hay una línea base de rendimiento en un teléfono de 120 Hz (2026-10-02) El fotograma de ≈169 ms al cambiar de pestaña se corrigió y se verificó en el teléfono (peor caso 29 ms). Horario de verano (Europe/London, 25 oct) y ahorro de batería sí se verificaron en un Android real. Nutrición, exportar/importar con el selector del sistema, eliminación total, y cardio en segundo plano y tras la muerte del proceso **sí** se verificaron en un Android real (2026-10-01).
 - Revisar el contenido de `prog-v1`, `review-v1` y la tabla MET `met-v1` antes de publicar (son heurísticas, la tabla MET no se contrastó con la fuente).
-- Ejecutar el CI (`.github/workflows/ci.yml`) cuando haya repositorio remoto.
+- Comprobar el CI (`.github/workflows/ci.yml`) en GitHub: desde el 2026-10-02 hay repositorio remoto (D42), pero la ejecución no se ha revisado desde aquí.
+- Probar en el teléfono el sistema experto (migración v6→v7 con datos reales) y el asistente IA con la clave de la persona.
 
 ## Datos y conectividad
 
-No se pide cuenta. Los datos están en una base SQLite privada del dispositivo (no cifrada) y no se envían a ningún servidor. Abrir un tutorial requiere Internet (navegador/YouTube del teléfono). Desinstalar o borrar los datos de la app elimina los registros: la copia de seguridad es explícita y manual (Más → Datos y privacidad). Android no incluye la base en las copias automáticas del sistema.
+No se pide cuenta. Los datos están en una base SQLite privada del dispositivo (no cifrada) y no se envían a ningún servidor, salvo lo que consulta el asistente IA opcional cuando la persona lo activa y le pregunta (va a su propio proveedor, con su clave; cada respuesta muestra qué se consultó). Abrir un tutorial requiere Internet (navegador/YouTube del teléfono). Desinstalar o borrar los datos de la app elimina los registros: la copia de seguridad es explícita y manual (Más → Datos y privacidad). Android no incluye la base en las copias automáticas del sistema.
 
 ## Lenguaje de entrenamiento
 

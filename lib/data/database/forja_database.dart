@@ -8,7 +8,7 @@ import 'tables.dart';
 part 'forja_database.g.dart';
 
 /// The schema version of this build; backups record it for information.
-const currentSchemaVersion = 6;
+const currentSchemaVersion = 7;
 
 @DriftDatabase(
   tables: [
@@ -36,6 +36,8 @@ const currentSchemaVersion = 6;
     Recipes,
     RecipeIngredients,
     NutritionGoalsTable,
+    CoachDecisions,
+    CoachPreferences,
   ],
 )
 class ForjaDatabase extends _$ForjaDatabase {
@@ -151,6 +153,17 @@ class ForjaDatabase extends _$ForjaDatabase {
       await m.createTable(schema.recipes);
       await m.createTable(schema.recipeIngredients);
       await m.createTable(schema.nutritionGoals);
+    },
+    from6To7: (m, schema) async {
+      // Saved favorites were all typed by hand or worked out from macros
+      // before there were estimates: they keep the manual default. The
+      // expert system starts with no decisions and nothing silenced.
+      await m.addColumn(
+        schema.foodFavorites,
+        schema.foodFavorites.caloriesSource,
+      );
+      await m.createTable(schema.coachDecisions);
+      await m.createTable(schema.coachPreferences);
     },
   );
 }

@@ -37,6 +37,8 @@ class SnapshotChanges {
     this.recipes = const [],
     this.removedRecipes = const {},
     this.goals,
+    this.coachDecisions = const [],
+    this.coachPreferences = const [],
   });
 
   /// Everything in [snapshot] as new rows, used by the legacy import.
@@ -60,6 +62,8 @@ class SnapshotChanges {
         favorites: snapshot.favorites,
         recipes: snapshot.recipes,
         goals: snapshot.goals.isEmpty ? null : snapshot.goals,
+        coachDecisions: snapshot.coachDecisions,
+        coachPreferences: snapshot.coachPreferences,
       );
 
   final UserProfile? profile;
@@ -99,6 +103,10 @@ class SnapshotChanges {
   final List<Recipe> recipes;
   final Set<String> removedRecipes;
   final NutritionGoals? goals;
+  // New entries of the append-only coach log, and preferences that are new
+  // or changed (keyed by family; never removed one by one).
+  final List<CoachDecision> coachDecisions;
+  final List<CoachPreference> coachPreferences;
 
   bool get isEmpty =>
       profile == null &&
@@ -128,7 +136,9 @@ class SnapshotChanges {
       removedFavorites.isEmpty &&
       recipes.isEmpty &&
       removedRecipes.isEmpty &&
-      goals == null;
+      goals == null &&
+      coachDecisions.isEmpty &&
+      coachPreferences.isEmpty;
 }
 
 SnapshotChanges diffSnapshots(AppSnapshot previous, AppSnapshot next) {
@@ -195,6 +205,19 @@ SnapshotChanges diffSnapshots(AppSnapshot previous, AppSnapshot next) {
           .every((i) => identical(reviewed[i], next.reviews[i]))) {
     throw StateError('Monthly reviews can only be appended.');
   }
+  final coached = previous.coachDecisions;
+  if (next.coachDecisions.length < coached.length ||
+      !Iterable<int>.generate(coached.length)
+          .every((i) => identical(coached[i], next.coachDecisions[i]))) {
+    throw StateError('Coach decisions can only be appended.');
+  }
+  final beforePreferences = {
+    for (final p in previous.coachPreferences) p.family: p,
+  };
+  final afterPreferences = {for (final p in next.coachPreferences) p.family};
+  if (!afterPreferences.containsAll(beforePreferences.keys)) {
+    throw StateError('Coach preferences are never removed one by one.');
+  }
   final beforeCardio = {for (final c in previous.cardio) c.id: c};
   final afterCardio = {for (final c in next.cardio) c.id: c};
   // Existing sessions keep their creation order; new ones come last.
@@ -229,6 +252,11 @@ SnapshotChanges diffSnapshots(AppSnapshot previous, AppSnapshot next) {
     }
   }
   return SnapshotChanges(
+    coachDecisions: next.coachDecisions.sublist(coached.length),
+    coachPreferences: [
+      for (final p in next.coachPreferences)
+        if (!identical(beforePreferences[p.family], p)) p,
+    ],
     favorites: [
       for (final f in next.favorites)
         if (!identical(beforeFavorites[f.id], f)) f,

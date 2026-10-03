@@ -1,5 +1,24 @@
 # Cambios
 
+## 2026-10-02 · asistente IA opcional con herramientas internas (F17)
+
+- **Asistente IA opcional** (Más → Asistente IA), desactivado por defecto y con **tu propia clave**: OpenCode Go con `mimo-v2.6-flash` por defecto, la API directa de Xiaomi MiMo o cualquier proveedor compatible con OpenAI por `https`. La clave solo se guarda en el almacenamiento seguro del teléfono. Antes de activarlo, un consentimiento explica a quién se envía, qué puede consultar (con un interruptor por categoría) y el riesgo de usar Go fuera de la programación.
+- **Describir comida (IA):** en «Añadir alimento», describe lo que comiste y el asistente estima calorías y macros; revisas los valores y los guardas como «kcal estimadas (IA)». Solo se envía lo que escribes.
+- **Chat del minicoach:** «Preguntar al asistente (IA)» en la página del minicoach. Consulta tus datos con herramientas internas de FORJA (con forma MCP, sin servidores externos), dice qué miró y cuántos tokens usó, y solo propone (una comida que revisas en el formulario, o un consejo del minicoach). Con una lesión registrada, avisa «Sin aumento». La conversación se borra al cerrar.
+- **Sin el asistente, la app no usa Internet.** El permiso INTERNET existe solo para él; Android 12+ excluye además los datos de las copias y transferencias del sistema. Borrar todo elimina también la clave.
+- Corregido: una clave guardada justo al abrir el asistente podía borrarse sola; el selector del tope diario se desbordaba con texto grande; en todas las páginas, un título de una sola palabra («EJERCICIOS») se partía a mitad de palabra en pantallas estrechas con texto grande.
+- Pruebas: 802 → 858 (ninguna usa la red).
+
+## 2026-10-02 · sistema experto local en el minicoach (F16)
+
+- **Minicoach con sistema experto `expert-v1`:** 30 reglas locales y explicables (seguridad, preparación, progresión, plan y volumen, constancia, cardio, nutrición y registro). Cada consejo dice en qué datos se basa, con qué regla, versión y respaldo (alta, media o heurística). Nada se aplica solo. La página se abre desde «Minicoach» en Hoy y en Más; Plan tiene «Revisión del plan». «Ahora no» oculta un consejo unos días; cada tipo (salvo seguridad) se puede ocultar.
+- **Seguridad:** una lesión o dolor de los últimos 14 días, o una pausa de 3 semanas sin hacer un ejercicio, bloquean cualquier aumento, también en Progreso, donde ahora sale «Sin aumento: …» sin botón de aceptar.
+- **Comportamiento por defecto:** el plan de ejemplo compara la progresión con lo que muestra Hoy (`prog-v2`); un plan generado ya ligero no se aligera otra vez por la energía habitual; Hoy muestra la duración estimada de la rutina y avisa al volver tras una pausa.
+- **Nutrición:** sin objetivos, una referencia general de proteína (no una dieta); una estimación del futuro asistente IA sigue marcada como «kcal estimadas (IA)» aunque se cambie el nombre o se guarde como favorito.
+- **Datos:** esquema 7 (decisiones del coach, tipos ocultos, origen de las kcal de los favoritos) con migración probada; copias de seguridad versión 2 (se siguen leyendo las de versión 1).
+- **Corregido:** a 320 px con el texto al 200 % la marca de la barra superior se desbordaba cuando la racha mostraba un número.
+- Pruebas: 712 → 802.
+
 ## 2026-10-02 · racha de entrenos (F15)
 
 - **Racha** con llama naranja animada en la barra superior (gris si hoy toca entrenar o aún no hay racha). Cuenta los días de entrenamiento del plan: completos, parciales o con algo hecho; los descansos no la rompen y una falta reprogramada tampoco (reglas `streak-v1`, explicadas en la propia página).
