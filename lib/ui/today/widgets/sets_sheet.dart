@@ -12,6 +12,7 @@ import '../../progress/view_models/progression_view_model.dart';
 import '../../progress/widgets/progression_card.dart';
 import '../view_models/today_view_model.dart';
 import 'reopen_dialog.dart';
+import '../../core/tone_buttons.dart';
 
 /// The detail panel of one exercise: real sets (warm-up and work), skipping
 /// and the optional rest countdown. Hoy itself stays compact.
@@ -237,6 +238,7 @@ class _SetsPanelState extends State<SetsPanel> {
                     ),
                     IconButton(
                       tooltip: 'Eliminar serie ${set.number}',
+                      style: toneIconStyle(ActionTone.danger),
                       onPressed: vm.busy ? null : () => _remove(set),
                       icon: const Icon(Icons.delete_outline),
                     ),
@@ -294,18 +296,25 @@ class _SetsPanelState extends State<SetsPanel> {
                 Expanded(
                   child: FilledButton(
                     key: const ValueKey('set-save'),
+                    style: toneStyle(ActionTone.confirm),
                     onPressed: vm.busy ? null : _save,
-                    child: Text(
+                    child: ToneLabel(
+                      Icons.save_outlined,
                       editing == null ? 'Guardar serie' : 'Guardar cambios',
                     ),
                   ),
                 ),
                 const SizedBox(width: 8),
                 if (editing == null)
-                  OutlinedButton(
-                    key: const ValueKey('set-skip'),
-                    onPressed: vm.busy ? null : _skipSet,
-                    child: const Text('Omitir serie'),
+                  // Both buttons share the row, so large text wraps inside
+                  // them instead of overflowing.
+                  Expanded(
+                    child: OutlinedButton(
+                      key: const ValueKey('set-skip'),
+                      style: toneStyle(ActionTone.caution),
+                      onPressed: vm.busy ? null : _skipSet,
+                      child: const ToneLabel(Icons.skip_next, 'Omitir serie'),
+                    ),
                   )
                 else
                   TextButton(
@@ -331,6 +340,7 @@ class _SetsPanelState extends State<SetsPanel> {
             children: [
               OutlinedButton.icon(
                 key: const ValueKey('sheet-complete'),
+                style: log.completed ? null : toneStyle(ActionTone.confirm),
                 onPressed: vm.busy || log.skipped
                     ? null
                     : () async {
@@ -349,8 +359,9 @@ class _SetsPanelState extends State<SetsPanel> {
               if (!log.skipped && !log.completed)
                 TextButton(
                   key: const ValueKey('exercise-skip'),
+                  style: toneStyle(ActionTone.caution),
                   onPressed: vm.busy ? null : _skipExercise,
-                  child: const Text('Omitir ejercicio'),
+                  child: const ToneLabel(Icons.skip_next, 'Omitir ejercicio'),
                 ),
             ],
           ),

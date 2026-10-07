@@ -59,6 +59,14 @@ class _ReminderFormState extends State<_ReminderForm> {
               final selected = await showTimePicker(
                 context: context,
                 initialTime: time,
+                // The Spanish picker shows a 24-hour clock. With the phone
+                // set to 12 hours, typing "08" after an afternoon time gave
+                // 20:00 (seen on a Redmi, 2026-10-07): parse it as shown.
+                builder: (context, child) => MediaQuery(
+                  data: MediaQuery.of(context)
+                      .copyWith(alwaysUse24HourFormat: true),
+                  child: child!,
+                ),
               );
               if (selected != null && mounted) setState(() => time = selected);
             },

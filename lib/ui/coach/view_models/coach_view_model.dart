@@ -50,8 +50,7 @@ class CoachViewModel extends ViewModel {
       profile.copyWith(skippedSetup: true),
       record: ProfileChange.skipped,
     ),
-    success:
-        'Usarás el plan de ejemplo. Puedes completar tu perfil cuando quieras.',
+    success: 'Sin plan por ahora: créalo en Plan o completa tu perfil cuando quieras.',
   );
 
   /// Saves the finished onboarding and proposes a plan from it.

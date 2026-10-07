@@ -178,7 +178,7 @@ void main() {
       expect(draft.source, PlanSource.manual);
       expect(
         draft.routines.map((r) => r.name),
-        examplePlan.routines.map((r) => r.name),
+        legacyTemplatePlan.routines.map((r) => r.name),
       );
       expect(
         draft.routines.map((r) => r.id).toSet().intersection({
@@ -376,7 +376,7 @@ void main() {
           'bench',
         ]);
         // The example the copy came from is untouched.
-        expect(examplePlan.routines[1].exerciseIds, [
+        expect(legacyTemplatePlan.routines[1].exerciseIds, [
           'bench',
           'shoulder',
           'triceps',

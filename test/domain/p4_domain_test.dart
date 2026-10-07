@@ -788,7 +788,10 @@ void main() {
     });
 
     test('the comparison names each weekday of the two plans', () {
-      final lines = ReviewService.comparePlans(examplePlan, examplePlan);
+      final lines = ReviewService.comparePlans(
+        legacyTemplatePlan,
+        legacyTemplatePlan,
+      );
       expect(lines, hasLength(3));
       expect(
         lines.first,

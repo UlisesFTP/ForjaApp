@@ -42,7 +42,7 @@ PlanVersion _generated({int rir = 3}) => PlanVersion(
   name: 'Generado',
   createdAt: DateTime.utc(2026, 10, 1),
   days: [
-    for (final day in examplePlan.days)
+    for (final day in legacyTemplatePlan.days)
       PlanDay(
         day.weekday,
         Routine(
@@ -235,7 +235,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       final minutes = PlanGenerator.routineMinutes(
-        examplePlan.routineOnWeekday(DateTime.tuesday)!,
+        legacyTemplatePlan.routineOnWeekday(DateTime.tuesday)!,
         exerciseFor,
       );
       expect(d.today.routineMinutes, minutes);

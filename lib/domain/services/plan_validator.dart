@@ -18,11 +18,15 @@ class PlanValidator {
         'El nombre del plan debe tener entre 1 y $maxName caracteres.',
       );
     }
+    // Any number of distinct weekdays (D45: the person's own plan may have
+    // four days, or one); a draft may still have none.
     final weekdays = [for (final d in plan.days) d.weekday];
-    if (weekdays.length != 3 ||
-        weekdays.toSet().length != 3 ||
+    if (weekdays.toSet().length != weekdays.length ||
         weekdays.any((d) => d < DateTime.monday || d > DateTime.sunday)) {
-      issues.add('El plan necesita exactamente tres días distintos.');
+      issues.add('Cada día del plan debe ser un día distinto de la semana.');
+    }
+    if (forAcceptance && weekdays.isEmpty) {
+      issues.add('Añade al menos un día de entrenamiento.');
     }
     final routineIds = <String>{};
     for (final routine in plan.routines) {

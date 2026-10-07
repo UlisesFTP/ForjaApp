@@ -82,7 +82,8 @@ class LocalForjaRepository extends ChangeNotifier
   Exercise exerciseById(String id) => exerciseFor(id);
 
   // The accepted version that applies on [date]: the latest one whose
-  // validity has started, or the built-in example before any is accepted.
+  // validity has started. Before any, nothing applies (D45), except on the
+  // days an install already trained with 0.1's template: its history keeps it.
   PlanVersion _planFor(AppSnapshot state, DateTime date) {
     final key = dateKey(date);
     PlanVersion? best;
@@ -93,11 +94,49 @@ class LocalForjaRepository extends ChangeNotifier
       // Later versions win ties: they were accepted afterwards.
       if (best == null || from.compareTo(best.effectiveFrom!) >= 0) best = plan;
     }
-    return best ?? examplePlan;
+    if (best != null) return best;
+    if (debugStartingPlan != null) return debugStartingPlan!;
+    final until = _templateUntil(state);
+    return until != null && key.compareTo(until) <= 0
+        ? legacyTemplatePlan
+        : noPlan;
+  }
+
+  /// Tests written when every install started with the template set it
+  /// back (see `test/flutter_test_config.dart`); the tests of the empty
+  /// start leave it null. Never set in the app.
+  @visibleForTesting
+  static PlanVersion? debugStartingPlan;
+
+  static final _templateRoutines = {
+    for (final r in legacyTemplatePlan.routines) r.id,
+  };
+  AppSnapshot? _templateCheckedFor;
+  String? _templateLastDay;
+
+  /// The last day that a recorded session or a moved workout put on the old
+  /// template's routines, or null. Up to that day the template keeps
+  /// rendering the history; after it, nothing applies until a plan does.
+  /// Cached per snapshot (it is immutable).
+  String? _templateUntil(AppSnapshot state) {
+    if (identical(state, _templateCheckedFor)) return _templateLastDay;
+    _templateCheckedFor = state;
+    String? last;
+    void see(String day) {
+      if (last == null || day.compareTo(last!) > 0) last = day;
+    }
+
+    for (final s in state.sessions.values) {
+      if (_templateRoutines.contains(s.routineId)) see(s.dateKey);
+    }
+    for (final e in state.overrides.entries) {
+      if (_templateRoutines.contains(e.value)) see(e.key);
+    }
+    return _templateLastDay = last;
   }
 
   Routine _routineById(AppSnapshot state, String id) {
-    for (final plan in [...state.plans, examplePlan]) {
+    for (final plan in [...state.plans, legacyTemplatePlan]) {
       for (final routine in plan.routines) {
         if (routine.id == id) return routine;
       }
@@ -790,7 +829,7 @@ class LocalForjaRepository extends ChangeNotifier
 
   AppSnapshot _withDraft(AppSnapshot state, PlanVersion draft) {
     final taken = {
-      for (final plan in [...state.plans, examplePlan])
+      for (final plan in [...state.plans, legacyTemplatePlan])
         if (plan.id != draft.id) ...plan.routines.map((r) => r.id),
     };
     if (draft.routines.any((r) => taken.contains(r.id))) {

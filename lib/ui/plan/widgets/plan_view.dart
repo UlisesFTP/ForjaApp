@@ -7,6 +7,7 @@ import '../../../domain/models/models.dart';
 import '../../core/responsive.dart';
 import '../../core/widgets.dart';
 import '../view_models/plan_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 class PlanView extends StatelessWidget {
   const PlanView({
@@ -29,7 +30,7 @@ class PlanView extends StatelessWidget {
     builder: (context) => ResponsivePage(
       header: const PageHeading(
         'TU PLAN',
-        subtitle: 'Tres días de fuerza. Espacio para recuperar.',
+        subtitle: 'Tus días de entrenamiento y tu descanso.',
       ),
       // The plan in use and its draft beside the week.
       primary: [
@@ -136,17 +137,28 @@ class _ActivePlan extends StatelessWidget {
   Widget build(BuildContext context) {
     final plan = vm.activePlan;
     final example = plan.source == PlanSource.example;
+    final none = plan.source == PlanSource.none;
+    final upcoming = vm.upcoming;
     return SurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Text(
-            example ? 'Plan de ejemplo' : plan.name,
+            none
+                ? upcoming?.name ?? 'Aún no tienes un plan'
+                : example
+                ? 'Plan de ejemplo'
+                : plan.name,
+            key: const ValueKey('active-plan-title'),
             style: Theme.of(context).textTheme.titleLarge,
           ),
           const SizedBox(height: 4),
           Text(
-            example
+            none && upcoming != null
+                ? 'Empieza el ${friendlyDate(parseDateKey(upcoming.effectiveFrom!))}. Hasta entonces no hay entrenamientos programados.'
+                : none
+                ? 'Crea tu rutina con tus días y tus ejercicios, o genera una desde tu perfil. FORJA no trae una rutina de ejemplo.'
+                : example
                 ? 'Es una plantilla fija de tres días, no un plan hecho para ti. Edítalo o genera uno desde tu perfil; los pesos son ejemplos, no cargas prescritas.'
                 : 'En uso desde ${friendlyDate(parseDateKey(plan.effectiveFrom!))}.',
           ),
@@ -156,9 +168,14 @@ class _ActivePlan extends StatelessWidget {
             runSpacing: 8,
             children: [
               OutlinedButton.icon(
+                key: const ValueKey('plan-edit'),
                 onPressed: vm.busy ? null : onEdit,
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Editar plan'),
+                icon: Icon(
+                  none && upcoming == null ? Icons.add : Icons.edit_outlined,
+                ),
+                label: Text(
+                  none && upcoming == null ? 'Crear mi plan' : 'Editar plan',
+                ),
               ),
               OutlinedButton.icon(
                 onPressed: vm.busy ? null : vm.generateFromProfile,
@@ -228,8 +245,8 @@ class _DraftCard extends StatelessWidget {
                 ),
                 TextButton(
                   onPressed: vm.busy ? null : vm.discardDraft,
-                  style: TextButton.styleFrom(foregroundColor: ForjaColors.ink),
-                  child: const Text('Descartar'),
+                  style: toneStyle(ActionTone.danger),
+                  child: const ToneLabel(Icons.delete_outline, 'Descartar'),
                 ),
               ],
             ),

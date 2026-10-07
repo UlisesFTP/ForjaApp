@@ -5,6 +5,7 @@ import '../../../domain/services/ai/ai_settings.dart';
 import '../../core/responsive.dart';
 import '../../core/widgets.dart';
 import '../view_models/ai_settings_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 /// The explicit consent for the external assistant (F17, D38). Only "Acepto
 /// y activar" gives consent; going back changes nothing.
@@ -131,7 +132,11 @@ class _AiConsentPageState extends State<AiConsentPage> {
                 onPressed: vm.busy || s.problem != null || !vm.hasKey
                     ? null
                     : _accept,
-                child: const Text('Acepto y activar'),
+                style: toneStyle(ActionTone.confirm),
+                child: const ToneLabel(
+                  Icons.verified_user_outlined,
+                  'Acepto y activar',
+                ),
               ),
               const SizedBox(height: 8),
               TextButton(

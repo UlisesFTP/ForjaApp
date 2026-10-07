@@ -420,7 +420,7 @@ void main() {
 
     test('G1 · a routine much longer than the chosen session length', () {
       final minutes = {
-        for (final d in examplePlan.days)
+        for (final d in legacyTemplatePlan.days)
           d.routine.id: PlanGenerator.routineMinutes(d.routine, exerciseFor),
       };
       for (final chosen in [10, 20, 30, 120]) {
@@ -477,7 +477,7 @@ void main() {
         source: PlanSource.generated,
         name: 'Borrador',
         createdAt: created,
-        days: examplePlan.days,
+        days: legacyTemplatePlan.days,
       );
       expect(
         _of(

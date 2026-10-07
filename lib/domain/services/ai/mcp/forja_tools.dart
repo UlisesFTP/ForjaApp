@@ -517,6 +517,7 @@ Map<String, Object?> _plan(ForjaToolContext ctx) {
       PlanSource.example => 'plantilla de ejemplo, adaptada al perfil',
       PlanSource.generated => 'generado desde el perfil',
       PlanSource.manual => 'editado por la persona',
+      PlanSource.none => 'sin plan todavía',
     },
     'days': [
       for (final d in plan.days)

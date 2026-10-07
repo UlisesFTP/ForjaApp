@@ -256,13 +256,21 @@ void main() {
         );
 
     test('a sound plan has no issues', () => expect(issues(plan()), isEmpty));
-    test('three distinct weekdays', () {
+    // D45: any number of distinct weekdays (the person's own plan may have
+    // four); before, exactly three.
+    test('distinct, valid weekdays; at least one to accept', () {
       expect(
         issues(plan(days: [1, 1, 3])),
-        contains('El plan necesita exactamente tres días distintos.'),
+        contains('Cada día del plan debe ser un día distinto de la semana.'),
       );
-      expect(issues(plan(days: [1, 3])), isNotEmpty);
       expect(issues(plan(days: [0, 3, 5])), isNotEmpty);
+      expect(issues(plan(days: [1, 3])), isEmpty);
+      expect(issues(plan(days: [1, 3, 4, 6])), isEmpty);
+      expect(
+        issues(plan(days: [])),
+        contains('Añade al menos un día de entrenamiento.'),
+      );
+      expect(issues(plan(days: []), accept: false), isEmpty);
     });
     test('names are required and bounded', () {
       expect(issues(plan(name: '  ')), isNotEmpty);

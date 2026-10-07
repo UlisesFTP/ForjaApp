@@ -36,10 +36,10 @@ Un release sin `android/key.properties` se rechaza a propósito. La firma de pro
 - **Hoy:** rutina, calendario, siguiente ejercicio, checklist, peso editable (kg/lb), panel de series, drag y menú de orden, calentamiento, check-in antes/después, reprogramación y reapertura.
 - **Plan:** versiones del plan (borrador → aceptar con vigencia), generador local, editor y acceso a cada fecha.
 - **Progreso:** cumplimiento, volumen real, evolución con tabla accesible, historial con series y sugerencias de progresión.
-- **Ejercicios:** 39 ejercicios, búsqueda sin acentos, filtros, alternativas y tutorial externo.
+- **Ejercicios:** 40 ejercicios, búsqueda sin acentos, filtros, alternativas y tutorial externo.
 - **Más:** cardio, nutrición, minicoach (sistema experto con su «por qué», perfil y revisión mensual), asistente IA (opcional), recordatorios, unidad de peso, licencias y datos y privacidad.
 
-El primer arranque ofrece completar el perfil sin pedir cuenta (se puede saltar y retomar). La plantilla inicial es piernas martes, empuje jueves y tirón sábado; sus pesos son valores de ejemplo.
+El primer arranque ofrece completar el perfil sin pedir cuenta (se puede saltar y retomar). Una instalación nueva no trae rutina: en Plan la creas con tus días (de 1 a 7) y ejercicios, o la generas desde tu perfil. Los pesos de referencia son valores de ejemplo, no cargas prescritas.
 
 ## Datos y privacidad
 
@@ -48,7 +48,7 @@ Todo se guarda en una base **SQLite** privada de la app (Drift, `forja.sqlite` e
 - **Copia de seguridad:** Más → Datos y privacidad. Exporta un JSON versionado con SHA-256 (detecta daños, no cifra) y contiene datos personales. Importar **reemplaza** todo: valida el archivo, muestra una vista previa, guarda antes una copia previa privada y reemplaza en una transacción. Eliminar todos los datos exige escribir BORRAR.
 - **Actualización desde la 0.1:** el primer arranque importa una sola vez el JSON antiguo (`forja_flutter_snapshot_v1`); el original nunca se modifica. Si no se puede validar, la app lo explica y ofrece reintentar, copiar los datos originales o continuar sin importar (con confirmación). Los datos del prototipo web no se migran.
 - **Recordatorios:** notificaciones locales con permiso del sistema; el sistema puede retrasarlas unos minutos.
-- **Asistente IA (opcional):** Más → Asistente IA. Elige proveedor (OpenCode Go por defecto, la API directa de Xiaomi MiMo o uno compatible con OpenAI por `https`) y escribe **tu** clave **en el teléfono**: se guarda solo en el almacenamiento seguro del sistema (nunca en la base, las copias, las preferencias ni el repositorio; no la pases con `--dart-define`). Se activa solo tras aceptar el consentimiento, que enumera lo que puede consultar. Cada respuesta muestra qué consultó, y solo propone: nada se guarda sin que lo confirmes. «Probar conexión» comprueba la clave y si el proveedor admite herramientas y JSON. Usar OpenCode Go desde una app que no es de programación puede hacer que limiten tu cuenta (lo explica el consentimiento). Borrar todo elimina también la clave y los ajustes del asistente. Es el único motivo del permiso INTERNET.
+- **Asistente IA (opcional):** Más → Asistente IA. Sigue los pasos de la hoja: elige proveedor y modelo en los menús (OpenCode Go por defecto; también OpenCode Zen, OpenAI, Gemini, DeepSeek, Mistral, Groq, OpenRouter, Xiaomi MiMo o uno compatible con OpenAI por `https`) y escribe **tu** clave **en el teléfono**: se guarda solo en el almacenamiento seguro del sistema (nunca en la base, las copias, las preferencias ni el repositorio; no la pases con `--dart-define`). Se activa solo tras aceptar el consentimiento, que enumera lo que puede consultar. Cada respuesta muestra qué consultó, y solo propone: nada se guarda sin que lo confirmes. «Probar conexión» comprueba la clave y si el proveedor admite herramientas y JSON. Usar OpenCode Go desde una app que no es de programación puede hacer que limiten tu cuenta (lo explica el consentimiento). Borrar todo elimina también la clave y los ajustes del asistente. Es el único motivo del permiso INTERNET.
 
 ## MVVM
 
@@ -66,7 +66,7 @@ lib/
     database/          tablas Drift y migraciones
     backup/            formato de copia con checksum
     legacy/            importación única del JSON 0.1
-    seed/              catálogo y plan de ejemplo
+    seed/              catálogo; plantilla 0.1 solo para historial
   ui/
     core/              controles y navbar
     [pantalla]/

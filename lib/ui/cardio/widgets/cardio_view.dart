@@ -9,6 +9,7 @@ import '../../../domain/services/cardio_math.dart';
 import '../../core/responsive.dart';
 import '../../core/widgets.dart';
 import '../view_models/cardio_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 class CardioView extends StatelessWidget {
   const CardioView({super.key, required this.vm});
@@ -145,6 +146,7 @@ class CardioView extends StatelessWidget {
           if (!vm.active)
             FilledButton.icon(
               key: const ValueKey('cardio-start'),
+              style: toneStyle(ActionTone.confirm),
               onPressed: vm.busy ? null : vm.start,
               icon: const Icon(Icons.play_arrow),
               label: const Text('Iniciar'),
@@ -164,8 +166,9 @@ class CardioView extends StatelessWidget {
             ),
             TextButton(
               key: const ValueKey('cardio-discard'),
+              style: toneStyle(ActionTone.danger),
               onPressed: vm.busy ? null : () => _discard(context),
-              child: const Text('Descartar sesión'),
+              child: const ToneLabel(Icons.delete_outline, 'Descartar sesión'),
             ),
           ],
           const SizedBox(height: 16),
@@ -249,8 +252,9 @@ class CardioView extends StatelessWidget {
             child: const Text('Cancelar'),
           ),
           FilledButton(
+            style: toneStyle(ActionTone.danger),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Descartar'),
+            child: const ToneLabel(Icons.delete_outline, 'Descartar'),
           ),
         ],
       ),
@@ -353,8 +357,12 @@ class _FinishFormState extends State<_FinishForm> {
         const SizedBox(height: 12),
         FilledButton(
           key: const ValueKey('cardio-save'),
+          style: toneStyle(ActionTone.confirm),
           onPressed: vm.busy ? null : _save,
-          child: Text(vm.busy ? 'Guardando…' : 'Guardar sesión'),
+          child: ToneLabel(
+            Icons.save_outlined,
+            vm.busy ? 'Guardando…' : 'Guardar sesión',
+          ),
         ),
         if (vm.error != null)
           Semantics(liveRegion: true, child: Text(vm.error!)),

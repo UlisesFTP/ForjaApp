@@ -311,3 +311,59 @@ Pendiente: iOS (sin macOS); recorrer onboarding y el editor completo en el telé
 - **iOS:** sin macOS/Xcode; ni compilado ni probado. Comportamiento de `sqlite3` en iOS sin verificar. Es el gate que mantiene F00 sin cerrar.
 - Exportación del original a archivo (hoy solo portapapeles) y política de backup del SO: F13.
 - Cobertura de tutorial_launcher 0 % (previa a P1).
+## F17 · Prueba en un Android real con la clave de la persona (2026-10-07)
+
+Plataforma: Redmi (Android real), APK release `0.9.0` firmado con la clave de depuración; clave escrita por la persona en el teléfono, nunca vista por el agente. Proveedor OpenCode Go, `https://opencode.ai/zen/go/v1`, modelo `mimo-v2.6-flash`. Los toques se enviaron por `adb`.
+
+- **Probar conexión**: resultado «Herramientas: sí · JSON: sí». Confirma Bearer, `thinking` desactivado, `tools` y `response_format` aceptados por Go.
+- **Chat con herramientas**: la pregunta «qué días entrené esta semana y cómo va mi plan» recibió respuesta coherente con el plan real, con «Qué miró la IA» (herramienta Plan), 3821 tokens de entrada, 186 de salida, 12,8 s.
+- **Página Minicoach**: se abre con el historial real tras migrar de v6 a v7 (sin pérdida visible de datos).
+- Documentación consultada: Zen usa `/zen/v1` (solo `mimo-v2.6-flash-free`, que la app rechaza); Go usa `/zen/go/v1` con `mimo-v2.6-flash`.
+
+Sigue **pendiente**: modo avión a mitad de petición, reinicio (la clave persiste), «Borrar todo», estimación de comida, y TalkBack.
+
+## F17 · Ajustes del asistente: accesibilidad y proveedores (2026-10-07)
+
+Pedido por el usuario: «mucho más accesible la vista de configuración del agente… más soporte a APIs y modelos… menú desplegable con los modelos más populares».
+
+- **Implementado:** hoja de ajustes en pasos con estado, menús de proveedor y modelo, «Más opciones», errores junto a su acción; 10 presets con modelos populares (`lib/domain/services/ai/ai_settings.dart`); petición adaptada por proveedor (`openai_compatible_client.dart`).
+- **Host (Windows):** `dart format` sin cambios, `dart analyze` sin incidencias, `flutter test` **868/868** (10 nuevas en `test/ai/provider_catalog_test.dart`: invariantes del catálogo, forma de la petición por proveedor, menús, «Otro modelo», proveedor personalizado, 320 px con texto al 200 % con las guías de objetivo táctil, etiqueta y contraste). Cambio de texto del rechazo de modelos gratuitos sin tocar la prueba existente.
+- **Fuentes de los modelos:** `https://opencode.ai/zen/go/v1/models` y `/zen/v1/models` (públicas) y `https://openrouter.ai/api/v1/models` (pública). Los ids de OpenAI, Gemini, DeepSeek, Mistral y Groq se derivaron de esas listas o de alias habituales (`mistral-*-latest`, `llama-3.3-70b-versatile`, `openai/gpt-oss-*`): **no se comprobaron contra cada proveedor** (no hay claves). La persona puede escribir otro modelo y «Probar conexión» lo comprueba.
+- **Pendiente:** probar en el teléfono la nueva hoja con lector de pantalla y con otro proveedor; confirmar `max_tokens` frente a `max_completion_tokens` en cada proveedor con una clave real.
+
+### Prueba en el teléfono de los ajustes nuevos (2026-10-07)
+
+Redmi (Android real), APK release `0.9.0` firmado con la clave de depuración, OpenCode Go con `mimo-v2.6-flash`; toques por `adb`. Resultados:
+
+- **Hoja nueva** (pasos, menú de 10 proveedores, menú de 6 modelos de Go con nota): se ve y responde bien. «Probar conexión»: «Conexión correcta. Herramientas: sí · JSON: sí».
+- **Modo avión a mitad de una petición del chat:** respuesta «Sin conexión» con los consejos locales, sin fallo; al quitar el modo avión el chat vuelve a responder (con herramientas, 8514 tokens ese día).
+- **Fallo 1 (corregido):** tras un arranque en frío la fila de Más decía «Desactivado» con el asistente activo, porque el estado solo se cargaba al abrir la hoja. Ahora se carga al arrancar (`AppDependencies.create`). Regresión en `test/ai/provider_catalog_test.dart`; se comprobó que sin la corrección la prueba falla.
+- **Fallo 2 (corregido):** «Describir comida (IA)» fallaba con «falta la cabecera de sesión» (solo el chat enviaba sesión). Ahora toda petición lleva una (`AiGateway.request`). Regresión en la misma prueba. Tras corregirlo: «2 huevos revueltos con dos rebanadas de pan y un aguacate mediano» → 625 kcal estimadas, confianza media, ítems, supuestos y una pregunta; no se guardó nada.
+- Pruebas en host: 870/870.
+- **Sin probar:** «Borrar todo» en el teléfono (borraría la clave de la persona), reinicio del teléfono, TalkBack con la hoja nueva, otros proveedores con clave real.
+
+## Botones con color de acción (D44) · 2026-10-07
+
+- **Implementado:** `lib/ui/core/tone_buttons.dart` (`ActionTone`, `toneStyle`, `toneIconStyle`, `ToneLabel`), colores en `ForjaColors`, retroalimentación de hover/foco/pulsado en `forjaTheme()`; aplicado a unos 40 botones de Hoy, series, Coach, revisión, Progreso, Plan, Nutrición, Cardio, Datos y Asistente.
+- **Host (Windows):** `dart format` sin cambios, `dart analyze` sin incidencias, `flutter test` **894/894** (24 nuevas en `test/tone_buttons_test.dart`, estilo sólido compacto: texto blanco ≥ 4,5:1 sobre el relleno de los 3 tonos en 4 estados, relleno ≥ 3:1 frente al fondo, las tarjetas y el papel, botón visible de 40 px con zona táctil de 48 px, estados distintos y cursor, ratón simulado que tiñe y restaura el botón sin cambiar su tipo, tema neutro, etiqueta larga a 320 px con texto al 200 %, y la hoja de datos a 390 px y 320 px/200 % con las guías de objetivo táctil, etiqueta y contraste). Ninguna prueba existente cambió.
+- **Teléfono (Redmi, release firmado con depuración, capturas por `adb`):** hoja del asistente (Eliminar clave y Borrar todo en rojo con icono, Guardar clave desactivado en gris), página Minicoach (verde «Revisar el plan», amarillo «Ahora no») y Hoy (Completar sesión desactivado hasta resolver los ejercicios).
+- **Limitaciones:** el hover solo se verifica con un puntero de ratón simulado en pruebas (el teléfono no tiene puntero); no se probó con TalkBack ni en una tablet con ratón; no se vieron en el teléfono el panel de series con datos, la revisión mensual ni los diálogos rojos.
+
+## Recordatorios en segundo plano (F11) · 2026-10-07
+
+Redmi 2412DPC0AG, Android 16, release `0.9.0` firmado con depuración, por `adb`. Permiso de notificaciones concedido, `RUN_ANY_IN_BACKGROUND: allow`, bucket de espera 10 (activo). Hoy era día de descanso, así que para no esperar al jueves se cambió **temporalmente** la zona horaria del teléfono a `Pacific/Kiritimati` (jueves 8 oct, 08:40 local, con `auto_time_zone 0`) y se restauró al final.
+
+- **Actualización de la app sin abrirla:** antes y después de `adb install -r`, 12 alarmas del receptor del plugin (`ScheduledNotificationReceiver`) con las mismas horas.
+- **Aviso con la app cerrada:** hora preferida 08:53 (12 programados, el primero ese día a las 08:53 local), Inicio y `am crash` (sin proceso). El aviso **«Hoy toca: Empuje · Tu sesión de FORJA te espera.»** (canal `forja_training`) se publicó a las **08:55:33**, unos 2,5 min tarde (alarma inexacta, como avisa la app).
+- **Tocar el aviso:** abrió FORJA en «Hoy · 8 oct · Empuje»; el aviso se quitó solo (`AUTO_CANCEL`).
+- **Restauración:** hora preferida 18:00, zona `America/Mexico_City` con `auto_time_zone 1`; tras reabrir la app, 12 alarmas a las 18:00 CST, la primera el jueves 8 oct.
+- **Fallo encontrado y corregido:** con el teléfono en formato de 12 horas, el selector de hora (que en español se ve en 24 horas) convertía «08» en 20:47 si la hora anterior era de tarde. `reminder_sheet.dart` fuerza ahora el formato de 24 horas dentro del selector. Regresión en `test/reminders_test.dart` (falla sin la corrección); con ella, en el teléfono «08:53» se guardó como 8:53.
+- Host: format sin cambios, `flutter test` **895/895**.
+- **Sin probar hoy:** con la pantalla apagada y en reposo profundo (Doze), con ahorro de batería (sí se probó el 2026-10-01) y tras reiniciar el teléfono (sí se probó el 2026-10-02).
+
+## Sin rutina de ejemplo y plan de 4 días (D45) · 2026-10-07
+
+- **Host:** `dart format` sin cambios, `dart analyze` sin incidencias, `flutter test` **904/904**. Nuevas en `test/no_plan_test.dart`: arranque sin plan (90 días sin entrenamiento, nada programado), historial conservado con la plantilla hasta su última sesión y nada después, plan de 4 días aceptado desde un lunes futuro, respaldo con 4 días y rechazo de un plan `none`, Hoy y Plan con el estado vacío (sin «Plan de ejemplo» en ninguna página), editor que crea días desde cero, plan que empieza el lunes anunciado en Plan, guías a 390 px y sin desbordes a 320 px con texto al 200 %.
+- **Teléfono (Redmi, release firmado con depuración):** tras actualizar, Hoy muestra «Aún no tienes un plan» (la plantilla solo queda para el día de la sesión antigua). Se exportó la copia del usuario (1 sesión, 1 cardio, perfil, 1 borrador), se le añadió con el propio códec de la app el plan aceptado «Rutina gym 4 días» desde el 12 oct (Torso A 7, Pierna A 6, Torso B 7, Pierna B 4 ejercicios; RIR 3; descanso 120 s en los pesados y 75 s en el resto), se importó (vista previa: 1 sesión, 2 versiones de plan, 1 cardio, 1 respuesta) y se descartó el borrador copia de la plantilla. Resultado: Plan dice «Empieza el Lunes 12 oct», Hoy «Siguiente: Lunes 12 oct · Torso A», el lunes 12 muestra 7 ejercicios (≈ 50 min) y los avisos quedan el lun 12, mié 14, jue 15, sáb 17… a las 18:00. Los archivos temporales con datos personales se borraron del teléfono y del ordenador; el script temporal se eliminó.
+- **Decisiones del plan cargado:** «2–3 series» en abdomen → 2; «2–4 RIR» → 3; «Remo con apoyo de pecho/máquina» → nuevo `chestrow`; «Prensa o sentadilla» → prensa; Pierna B con 4 ejercicios como se pidió. Los pesos de referencia son los del catálogo (ejemplos editables, no cargas prescritas).
+- **Pendiente:** el navbar mide 37–45 px de ancho por objetivo a 320–390 px (anterior a este cambio; el conjunto de pruebas usa la guía de 44 pt); iOS; TalkBack.

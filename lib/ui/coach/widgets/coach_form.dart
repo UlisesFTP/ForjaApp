@@ -90,7 +90,7 @@ class _CoachFormState extends State<CoachForm> {
                 padding: EdgeInsets.only(bottom: 12),
                 child: SurfaceCard(
                   child: Text(
-                    'Estás usando el plan de ejemplo. Al guardar tu perfil se crea un borrador de plan para que lo revises.',
+                    'Aún no completaste tu perfil. Al guardarlo se crea un borrador de plan para que lo revises; también puedes crear tu rutina en Plan.',
                   ),
                 ),
               ),

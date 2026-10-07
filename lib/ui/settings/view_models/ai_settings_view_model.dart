@@ -35,28 +35,30 @@ class AiSettingsViewModel extends ViewModel {
   /// address asks for consent again.
   Future<bool> setProvider(AiProvider provider) {
     final preset = aiPresets[provider]!;
-    return run(
-      () => gateway.updateSettings(
+    return run(() async {
+      // The last test was for another provider or model.
+      report = null;
+      await gateway.updateSettings(
         settings.copyWith(
           provider: provider,
           baseUrl: provider == AiProvider.custom ? '' : preset.baseUrl,
           model: provider == AiProvider.custom ? '' : preset.model,
           capabilities: () => null,
         ),
-      ),
-    );
+      );
+    });
   }
 
-  Future<bool> setAddress({String? baseUrl, String? model}) => run(
-    () => gateway.updateSettings(
+  Future<bool> setAddress({String? baseUrl, String? model}) => run(() async {
+    report = null;
+    await gateway.updateSettings(
       settings.copyWith(
         baseUrl: baseUrl?.trim(),
         model: model?.trim(),
         capabilities: () => null,
       ),
-    ),
-    success: 'Guardado',
-  );
+    );
+  }, success: 'Guardado');
 
   Future<bool> setFeature(AiFeature feature, bool on) => run(
     () => gateway.updateSettings(

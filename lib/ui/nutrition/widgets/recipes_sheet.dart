@@ -7,6 +7,7 @@ import '../../core/widgets.dart';
 import '../view_models/nutrition_view_model.dart';
 import 'food_form.dart' show parseOptional;
 import 'nutrition_view.dart' show gramsText;
+import '../../core/tone_buttons.dart';
 
 Future<void> showRecipes(BuildContext context, NutritionViewModel vm) =>
     showForjaSheet<void>(context, title: 'Recetas', child: _RecipesPanel(vm));
@@ -115,8 +116,9 @@ class _RecipesPanelState extends State<_RecipesPanel> {
             child: const Text('Cancelar'),
           ),
           FilledButton(
+            style: toneStyle(ActionTone.danger),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Eliminar'),
+            child: const ToneLabel(Icons.delete_outline, 'Eliminar'),
           ),
         ],
       ),
@@ -229,6 +231,7 @@ class _RecipesPanelState extends State<_RecipesPanel> {
               ),
               IconButton(
                 tooltip: 'Eliminar ${r.name}',
+                style: toneIconStyle(ActionTone.danger),
                 onPressed: vm.busy ? null : () => _delete(r),
                 icon: const Icon(Icons.delete_outline),
               ),
@@ -441,8 +444,12 @@ class _RecipeEditorState extends State<RecipeEditor> {
             ),
             FilledButton(
               key: const ValueKey('recipe-save'),
+              style: toneStyle(ActionTone.confirm),
               onPressed: widget.vm.busy ? null : _save,
-              child: Text(widget.vm.busy ? 'Guardando…' : 'Guardar receta'),
+              child: ToneLabel(
+                Icons.save_outlined,
+                widget.vm.busy ? 'Guardando…' : 'Guardar receta',
+              ),
             ),
             if (widget.vm.error != null)
               Semantics(liveRegion: true, child: Text(widget.vm.error!)),

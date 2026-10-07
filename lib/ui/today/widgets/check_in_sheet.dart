@@ -4,6 +4,7 @@ import '../../../domain/models/models.dart';
 import '../../../domain/models/labels.dart';
 import '../../core/widgets.dart';
 import '../view_models/today_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 Future<void> showCheckIn(
   BuildContext context,
@@ -75,6 +76,7 @@ class _CheckInFormState extends State<_CheckInForm> {
         ),
         const SizedBox(height: 12),
         FilledButton(
+          style: toneStyle(ActionTone.confirm),
           onPressed: widget.vm.busy
               ? null
               : () async {
@@ -86,7 +88,10 @@ class _CheckInFormState extends State<_CheckInForm> {
                     Navigator.pop(context);
                   }
                 },
-          child: Text(widget.vm.busy ? 'Guardando…' : 'Guardar check-in'),
+          child: ToneLabel(
+            Icons.save_outlined,
+            widget.vm.busy ? 'Guardando…' : 'Guardar check-in',
+          ),
         ),
         if (widget.vm.error != null)
           Semantics(liveRegion: true, child: Text(widget.vm.error!)),

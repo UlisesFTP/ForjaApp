@@ -15,7 +15,7 @@ El SDD es la referencia técnica del producto. Las instrucciones directas del us
 ## Invariantes
 
 - Flutter/Dart, teléfonos Android e iOS, MVVM, datos locales y sin login/backend.
-- Conservar la identidad monocromática (única excepción: el naranja de la llama de racha, D36), DM Sans/Barlow Condensed, Hoy compacto y la navbar con gota: barra inferior en vertical y riel lateral con la misma gota cuando la pantalla es más ancha que alta (decisión del usuario, D33). La app debe adaptarse a teléfonos y tablets en ambas orientaciones (`lib/ui/core/responsive.dart`, `test/responsive_test.dart`). Añadir funciones mediante detalles o paneles; no llenar Hoy de controles.
+- Conservar la identidad monocromática (excepciones: el naranja de la llama de racha, D36, y el verde, amarillo y rojo de las acciones clave, D44, siempre con icono y texto), DM Sans/Barlow Condensed, Hoy compacto y la navbar con gota: barra inferior en vertical y riel lateral con la misma gota cuando la pantalla es más ancha que alta (decisión del usuario, D33). La app debe adaptarse a teléfonos y tablets en ambas orientaciones (`lib/ui/core/responsive.dart`, `test/responsive_test.dart`). Añadir funciones mediante detalles o paneles; no llenar Hoy de controles.
 - Vista → ViewModel → contratos → repositorios/servicios. Los plugins, SQL y reglas de progresión no pertenecen a widgets.
 - No sustituir arquitectura/gestor de estado ni actualizar dependencias indiscriminadamente. Justificar el cambio que necesita una feature.
 - Guardar de forma atómica antes de comunicar éxito. Evitar doble envío, pérdida de cambios y corrupción. Cada cambio de esquema requiere migración y pruebas con datos anteriores.

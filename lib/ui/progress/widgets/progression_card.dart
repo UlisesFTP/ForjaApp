@@ -7,6 +7,7 @@ import '../../../domain/models/models.dart';
 import '../../../domain/services/progression_engine.dart';
 import '../../core/widgets.dart';
 import '../view_models/progression_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 const progressionTitles = {
   ProgressionKind.increase: 'Sugerencia: subir la carga',
@@ -114,13 +115,18 @@ class ProgressionCard extends StatelessWidget {
                 children: [
                   FilledButton(
                     key: ValueKey('accept-${s.exerciseId}'),
+                    style: toneStyle(ActionTone.confirm),
                     onPressed: vm.busy ? null : () => vm.accept(s),
-                    child: const Text('Aceptar aumento'),
+                    child: const ToneLabel(
+                      Icons.trending_up,
+                      'Aceptar aumento',
+                    ),
                   ),
                   OutlinedButton(
                     key: ValueKey('reject-${s.exerciseId}'),
+                    style: toneStyle(ActionTone.caution),
                     onPressed: vm.busy ? null : () => vm.reject(s),
-                    child: const Text('Rechazar'),
+                    child: const ToneLabel(Icons.close, 'Rechazar'),
                   ),
                 ],
               ),

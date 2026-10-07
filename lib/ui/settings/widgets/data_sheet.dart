@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../core/date_utils.dart';
 import '../../core/widgets.dart';
 import '../view_models/data_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 Future<void> showData(
   BuildContext context,
@@ -126,8 +127,12 @@ class DataPanel extends StatelessWidget {
             const SizedBox(height: 8),
             FilledButton(
               key: const ValueKey('import-confirm'),
+              style: toneStyle(ActionTone.danger),
               onPressed: vm.busy ? null : vm.confirmImport,
-              child: Text(vm.busy ? 'Importando…' : 'Reemplazar mis datos'),
+              child: ToneLabel(
+                Icons.sync_problem,
+                vm.busy ? 'Importando…' : 'Reemplazar mis datos',
+              ),
             ),
             TextButton(
               key: const ValueKey('import-cancel'),
@@ -144,6 +149,7 @@ class DataPanel extends StatelessWidget {
           const SizedBox(height: 8),
           OutlinedButton.icon(
             key: const ValueKey('delete-all'),
+            style: toneStyle(ActionTone.danger),
             onPressed: vm.busy ? null : () => _delete(context),
             icon: const Icon(Icons.delete_forever_outlined),
             label: const Text('Eliminar todos mis datos'),
@@ -250,10 +256,11 @@ class _DeleteDialogState extends State<_DeleteDialog> {
       ),
       FilledButton(
         key: const ValueKey('delete-confirm'),
+        style: toneStyle(ActionTone.danger),
         onPressed: controller.text.trim() == 'BORRAR'
             ? () => Navigator.pop(context, true)
             : null,
-        child: const Text('Eliminar todo'),
+        child: const ToneLabel(Icons.delete_forever_outlined, 'Eliminar todo'),
       ),
     ],
   );

@@ -6,6 +6,7 @@ import '../../core/ai_widgets.dart';
 import '../../core/widgets.dart';
 import '../view_models/meal_estimate_view_model.dart';
 import '../view_models/nutrition_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 /// "Describir comida (IA)": returns the values to fill the food form with
 /// (source `estimated`), or null. It never saves anything.
@@ -163,8 +164,9 @@ class _MealEstimateState extends State<_MealEstimate> {
             const SizedBox(height: 12),
             FilledButton(
               key: const ValueKey('meal-use'),
+              style: toneStyle(ActionTone.confirm),
               onPressed: () => Navigator.of(context).pop(_draft(e)),
-              child: const Text('Usar estos valores'),
+              child: const ToneLabel(Icons.check, 'Usar estos valores'),
             ),
             const Text(
               'Se rellena el formulario; nada se guarda hasta que tú lo '

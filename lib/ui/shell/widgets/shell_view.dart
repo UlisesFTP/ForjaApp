@@ -67,6 +67,7 @@ class _ShellViewState extends State<ShellView> with WidgetsBindingObserver {
       onProgress: () => d.shell.open(AppPage.progress),
       onCoach: () => _openCoach(),
       onCardio: () => d.shell.open(AppPage.cardio),
+      onPlan: () => d.shell.open(AppPage.plan),
     );
     _plan = PlanView(
       vm: d.plan,

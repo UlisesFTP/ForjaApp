@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../data/repositories/local_forja_repository.dart';
 import '../data/backup/backup_codec.dart';
 import '../data/database/forja_database.dart' show currentSchemaVersion;
@@ -149,18 +151,22 @@ class AppDependencies {
     );
     try {
       await repository.initialize();
+      final gateway = AiGateway(
+        client: aiClient ?? const DisabledAiChatClient(),
+        secrets: secrets ?? MemorySecretStore(),
+        store: aiSettings ?? MemoryAiSettingsStore(),
+        clock: clock,
+      );
+      // Reads only the local settings, consent and key (no network), so the
+      // state shown in Más is the saved one right after a cold start.
+      unawaited(gateway.load().catchError((Object _) {}));
       return AppDependencies._(
         repository,
         launcher ?? ExternalTutorialLauncher(),
         notifications ?? NoopNotificationService(),
         backupFiles ?? FilePickerBackupFiles(),
         backupVault ?? FileBackupVault(),
-        AiGateway(
-          client: aiClient ?? const DisabledAiChatClient(),
-          secrets: secrets ?? MemorySecretStore(),
-          store: aiSettings ?? MemoryAiSettingsStore(),
-          clock: clock,
-        ),
+        gateway,
         clock: clock,
       );
     } catch (error, stack) {

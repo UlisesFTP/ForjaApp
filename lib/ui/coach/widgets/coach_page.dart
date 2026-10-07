@@ -6,6 +6,7 @@ import '../../../domain/expert/expert_coach.dart';
 import '../../core/responsive.dart';
 import '../../core/widgets.dart';
 import '../view_models/coach_advice_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 /// What the page needs from the rest of the app to carry out an action: it
 /// navigates or opens an existing sheet. Nothing is saved by the page.
@@ -361,8 +362,18 @@ class RecommendationCard extends StatelessWidget {
                 if (action != null)
                   FilledButton(
                     key: ValueKey('coach-accept-${r.key}'),
+                    style: toneStyle(ActionTone.confirm),
                     onPressed: busy ? null : onAction,
-                    child: Text(action.label),
+                    // An arrow for the actions that only open a screen, a
+                    // check for the ones that apply a change after confirming.
+                    child: ToneLabel(
+                      action is IncreaseLoad ||
+                              action is AddVolume ||
+                              action is AdvanceExercise
+                          ? Icons.check
+                          : Icons.arrow_forward,
+                      action.label,
+                    ),
                   ),
                 OutlinedButton(
                   key: ValueKey('coach-why-${r.key}'),
@@ -371,8 +382,9 @@ class RecommendationCard extends StatelessWidget {
                 ),
                 TextButton(
                   key: ValueKey('coach-dismiss-${r.key}'),
+                  style: toneStyle(ActionTone.caution),
                   onPressed: busy ? null : onDismiss,
-                  child: const Text('Ahora no'),
+                  child: const ToneLabel(Icons.snooze, 'Ahora no'),
                 ),
               ],
             ),

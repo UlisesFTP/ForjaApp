@@ -33,7 +33,7 @@ class LocalStoreOpener {
         source: _source,
         decoder: LegacySnapshotV1Decoder(
           // 0.1 only ever referenced its fixed template's routines.
-          routineIds: {for (final r in examplePlan.routines) r.id},
+          routineIds: {for (final r in legacyTemplatePlan.routines) r.id},
           exerciseIds: {for (final e in exerciseCatalog) e.id},
         ),
       ).run(skip: skipLegacyImport);

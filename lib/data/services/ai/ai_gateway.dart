@@ -138,7 +138,9 @@ class AiGateway extends ChangeNotifier {
           model: settings.model.trim(),
           apiKey: key,
           preset: settings.preset,
-          sessionId: sessionId,
+          // OpenCode answers 400 without a session: a one-off request
+          // (a meal estimate) gets its own.
+          sessionId: sessionId ?? newSession(),
           capabilities: settings.capabilities,
         ),
         cancel: stop.future,

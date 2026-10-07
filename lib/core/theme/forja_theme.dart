@@ -9,8 +9,9 @@ abstract final class ForjaColors {
   static const muted = Color(0xFFC4C4C0);
   static const border = Color(0xFF494949);
 
-  // The streak flame is the only colour outside the monochrome palette
-  // (decision of the person, D36). Only the flame and the heat map use it.
+  // Colour outside the monochrome palette: the streak flame (D36, only the
+  // flame and the heat map use it) and the action colours of D44, used only
+  // on key action buttons, always with an icon and a text label.
   /// Flame on dark surfaces.
   static const flame = Color(0xFFFF9600);
 
@@ -22,6 +23,20 @@ abstract final class ForjaColors {
 
   /// Unlit flame (no streak, or today's workout still to do).
   static const flameOff = Color(0xFF757570);
+
+  /// White on the action colours (D44).
+  static const onTone = Color(0xFFFFFFFF);
+
+  /// Confirm, save, accept, complete (D44). Solid, with white text on it
+  /// (at least 4.5:1) and at least 3:1 against the dark background.
+  static const success = Color(0xFF15803D);
+
+  /// Caution: skip, postpone, "not now", reject (D44). A dark yellow: white
+  /// text is not readable on a bright one.
+  static const caution = Color(0xFFA16207);
+
+  /// Destructive: delete, discard, replace (D44).
+  static const danger = Color(0xFFDC2626);
 }
 
 ThemeData forjaTheme() {
@@ -91,13 +106,18 @@ ThemeData forjaTheme() {
       style: FilledButton.styleFrom(
         minimumSize: const Size(48, 48),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-      ),
+      ).copyWith(overlayColor: _feedback(ForjaColors.ink)),
     ),
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         minimumSize: const Size(48, 48),
         side: const BorderSide(color: ForjaColors.border),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ).copyWith(overlayColor: _feedback(ForjaColors.text)),
+    ),
+    textButtonTheme: TextButtonThemeData(
+      style: TextButton.styleFrom().copyWith(
+        overlayColor: _feedback(ForjaColors.text),
       ),
     ),
     // Icons on the dark surfaces use the text color (never the scheme's dimmer
@@ -107,7 +127,7 @@ ThemeData forjaTheme() {
       style: IconButton.styleFrom(
         minimumSize: const Size(48, 48),
         foregroundColor: ForjaColors.text,
-      ),
+      ).copyWith(overlayColor: _feedback(ForjaColors.text)),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
@@ -139,3 +159,19 @@ ThemeData forjaTheme() {
     dividerTheme: const DividerThemeData(color: ForjaColors.border),
   );
 }
+
+/// Hover (pointer), focus (keyboard) and pressed (touch) feedback of the
+/// buttons: a clearer tint than the Material default, in [color].
+WidgetStateProperty<Color?> _feedback(Color color) =>
+    WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.pressed)) {
+        return color.withValues(alpha: .20);
+      }
+      if (states.contains(WidgetState.focused)) {
+        return color.withValues(alpha: .16);
+      }
+      if (states.contains(WidgetState.hovered)) {
+        return color.withValues(alpha: .10);
+      }
+      return null;
+    });

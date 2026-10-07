@@ -347,7 +347,7 @@ void main() {
   group('editing a copy', () {
     test('cloning gives fresh ids so the plan in use cannot change', () async {
       final copy = cloneForEditing(
-        examplePlan,
+        legacyTemplatePlan,
         now: DateTime.utc(2026, 10, 1),
         newId: () => 'n${ids++}',
       );

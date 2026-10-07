@@ -47,7 +47,7 @@ CoachInputs _randomInputs(Random random) {
   T pick<T>(List<T> items) => items[random.nextInt(items.length)];
   final today = monday;
   final plan = random.nextBool()
-      ? examplePlan
+      ? legacyTemplatePlan
       : examplePlanCopy(pick([PlanSource.manual, PlanSource.generated]));
   final profile = UserProfile(
     experience: pick(Experience.values),
@@ -304,7 +304,7 @@ void main() {
       final history = <WorkoutSession>[];
       for (var i = 730; i >= 1; i--) {
         final day = nextDay(monday, -i);
-        final routine = examplePlan.routineOnWeekday(day.weekday);
+        final routine = legacyTemplatePlan.routineOnWeekday(day.weekday);
         if (routine == null) continue;
         history.add(
           session(dateKey(day), [

@@ -568,6 +568,8 @@ class BackupCodec {
         isKnown: isKnownExercise,
       );
       if (issues.isNotEmpty) throw _Issue(p, 'plan no válido');
+      // The empty plan only exists in code (D45).
+      if (plan.source == PlanSource.none) throw _Issue(p, 'plan no válido');
       plans.add(plan);
     }
 

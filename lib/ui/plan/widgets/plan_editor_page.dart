@@ -9,6 +9,7 @@ import '../../../domain/services/exercise_library.dart';
 import '../../core/widgets.dart';
 import '../view_models/plan_editor_view_model.dart';
 import '../view_models/plan_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 /// Makes sure a draft exists, then opens the editor over it.
 Future<void> editPlan(
@@ -51,8 +52,9 @@ class PlanEditorPage extends StatelessWidget {
                 child: const Text('Seguir editando'),
               ),
               FilledButton(
+                style: toneStyle(ActionTone.caution),
                 onPressed: () => Navigator.pop(context, true),
-                child: const Text('Salir sin guardar'),
+                child: const ToneLabel(Icons.logout, 'Salir sin guardar'),
               ),
             ],
           ),
@@ -97,6 +99,24 @@ class PlanEditorPage extends StatelessWidget {
         const SizedBox(height: 8),
         for (var day = 0; day < vm.working.days.length; day++)
           _DayCard(vm: vm, day: day),
+        if (vm.working.days.isEmpty)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 12),
+            child: Text(
+              'Tu plan aún no tiene días. Añade los días que entrenas y sus '
+              'ejercicios.',
+            ),
+          ),
+        if (vm.working.days.length < 7)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: OutlinedButton.icon(
+              key: const ValueKey('add-day'),
+              onPressed: vm.busy ? null : vm.addDay,
+              icon: const Icon(Icons.add),
+              label: const Text('Añadir día'),
+            ),
+          ),
         if (issues.isNotEmpty)
           SurfaceCard(
             child: Semantics(
@@ -121,15 +141,17 @@ class PlanEditorPage extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         FilledButton(
+          style: toneStyle(ActionTone.confirm),
           onPressed: vm.busy || issues.isNotEmpty
               ? null
               : () => _accept(context),
-          child: const Text('Aceptar plan'),
+          child: const ToneLabel(Icons.check_circle_outline, 'Aceptar plan'),
         ),
         const SizedBox(height: 10),
         TextButton(
+          style: toneStyle(ActionTone.danger),
           onPressed: vm.busy ? null : () => _discard(context),
-          child: const Text('Descartar borrador'),
+          child: const ToneLabel(Icons.delete_outline, 'Descartar borrador'),
         ),
         if (vm.error != null)
           Semantics(liveRegion: true, child: Text(vm.error!)),
@@ -149,8 +171,9 @@ class PlanEditorPage extends StatelessWidget {
             child: const Text('Cancelar'),
           ),
           FilledButton(
+            style: toneStyle(ActionTone.danger),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Descartar'),
+            child: const ToneLabel(Icons.delete_outline, 'Descartar'),
           ),
         ],
       ),
@@ -202,8 +225,9 @@ class PlanEditorPage extends StatelessWidget {
               child: const Text('Cancelar'),
             ),
             FilledButton(
+              style: toneStyle(ActionTone.confirm),
               onPressed: () => Navigator.pop(context, chosen),
-              child: const Text('Aceptar'),
+              child: const ToneLabel(Icons.check, 'Aceptar'),
             ),
           ],
         ),
@@ -273,6 +297,15 @@ class _DayCard extends StatelessWidget {
               onPressed: () => _pick(context),
               icon: const Icon(Icons.add),
               label: const Text('Añadir ejercicio'),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                key: ValueKey('remove-day-${routine.id}'),
+                style: toneStyle(ActionTone.danger),
+                onPressed: vm.busy ? null : () => vm.removeDay(day),
+                child: const ToneLabel(Icons.delete_outline, 'Quitar este día'),
+              ),
             ),
           ],
         ),

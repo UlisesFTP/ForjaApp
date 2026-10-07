@@ -128,7 +128,7 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
               child: const Text('Saltar por ahora'),
             ),
             Text(
-              'Si saltas, usarás un plan de ejemplo identificado como tal. No se pide ningún permiso del teléfono.',
+              'Si saltas, empiezas sin plan: puedes crear tu rutina en Plan cuando quieras. No se pide ningún permiso del teléfono.',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
             if (widget.vm.error != null)

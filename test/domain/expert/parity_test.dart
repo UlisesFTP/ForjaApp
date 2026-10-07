@@ -29,13 +29,13 @@ void main() {
   group('the expert system keeps the existing rules exactly (D37)', () {
     test('the advice line of Hoy is TrainingRules.recommendation in every '
         'combination', () {
-      final manual = examplePlan.copyWith(source: PlanSource.manual);
+      final manual = legacyTemplatePlan.copyWith(source: PlanSource.manual);
       var cases = 0;
       for (final feeling in [null, ...Feeling.values]) {
         for (final energy in Energy.values) {
           for (final experience in Experience.values) {
             for (final goal in TrainingGoal.values) {
-              for (final plan in [examplePlan, manual]) {
+              for (final plan in [legacyTemplatePlan, manual]) {
                 for (final adjustment in [null, true, false]) {
                   // Monday is a rest day, Tuesday a training day.
                   for (final today in [monday, nextDay(monday)]) {

@@ -20,7 +20,8 @@ String _list(List<String> items) => items.length < 2
 /// The plan's own numbers only mean something once the plan is the person's,
 /// or the example plan of someone who finished the setup.
 bool _planIsTheirs(CoachFacts f) =>
-    f.inputs.plan.source != PlanSource.example || f.profile.onboarded;
+    f.inputs.plan.source != PlanSource.none &&
+    (f.inputs.plan.source != PlanSource.example || f.profile.onboarded);
 
 /// V2 · A major muscle under 4 sets a week with a strength or muscle goal.
 class LowVolume extends ExpertRule {

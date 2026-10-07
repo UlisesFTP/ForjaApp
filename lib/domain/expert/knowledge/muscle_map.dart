@@ -58,6 +58,7 @@ const muscleMap = <String, MuscleWork>{
   'lateral': MuscleWork([Muscle.shoulders]),
   'facepull': MuscleWork([Muscle.shoulders], [Muscle.back]),
   'row': MuscleWork([Muscle.back], [Muscle.biceps]),
+  'chestrow': MuscleWork([Muscle.back], [Muscle.biceps]),
   'pulldown': MuscleWork([Muscle.back], [Muscle.biceps]),
   'pullup': MuscleWork([Muscle.back], [Muscle.biceps]),
   'dbrow': MuscleWork([Muscle.back], [Muscle.biceps]),

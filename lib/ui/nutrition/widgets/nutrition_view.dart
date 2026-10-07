@@ -9,6 +9,7 @@ import '../view_models/nutrition_view_model.dart';
 import 'food_form.dart';
 import 'goals_sheet.dart';
 import 'recipes_sheet.dart';
+import '../../core/tone_buttons.dart';
 
 String gramsText(double v) =>
     v == v.roundToDouble() ? '${v.toInt()}' : v.toStringAsFixed(1);
@@ -231,6 +232,7 @@ class NutritionView extends StatelessWidget {
         ),
         IconButton(
           tooltip: 'Eliminar ${entry.name}',
+          style: toneIconStyle(ActionTone.danger),
           onPressed: vm.busy ? null : () => vm.remove(entry),
           icon: const Icon(Icons.delete_outline),
         ),

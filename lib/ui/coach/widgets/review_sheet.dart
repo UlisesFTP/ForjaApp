@@ -8,6 +8,7 @@ import '../../../domain/services/review_service.dart';
 import '../../core/widgets.dart';
 import '../view_models/review_view_model.dart';
 import 'profile_inputs.dart';
+import '../../core/tone_buttons.dart';
 
 const _difficultyLabels = {
   ReviewDifficulty.easy: 'Fácil',
@@ -150,6 +151,7 @@ class ReviewPanel extends StatelessWidget {
         const SizedBox(height: 8),
         TextButton(
           key: const ValueKey('review-postpone'),
+          style: toneStyle(ActionTone.caution),
           onPressed: vm.busy
               ? null
               : () async {
@@ -157,7 +159,10 @@ class ReviewPanel extends StatelessWidget {
                     Navigator.pop(context);
                   }
                 },
-          child: Text('Posponer ${ReviewService.snoozeDays} días'),
+          child: ToneLabel(
+            Icons.snooze,
+            'Posponer ${ReviewService.snoozeDays} días',
+          ),
         ),
         if (vm.error != null)
           Semantics(liveRegion: true, child: Text(vm.error!)),
@@ -228,6 +233,7 @@ class ReviewPanel extends StatelessWidget {
         const SizedBox(height: 16),
         FilledButton(
           key: const ValueKey('review-accept'),
+          style: toneStyle(ActionTone.confirm),
           onPressed: vm.busy || (vm.changesPlan && failure != null)
               ? null
               : () async {
@@ -235,11 +241,15 @@ class ReviewPanel extends StatelessWidget {
                     Navigator.pop(context);
                   }
                 },
-          child: Text(vm.busy ? 'Guardando…' : 'Aceptar propuesta'),
+          child: ToneLabel(
+            Icons.check_circle_outline,
+            vm.busy ? 'Guardando…' : 'Aceptar propuesta',
+          ),
         ),
         const SizedBox(height: 8),
         OutlinedButton(
           key: const ValueKey('review-reject'),
+          style: toneStyle(ActionTone.caution),
           onPressed: vm.busy
               ? null
               : () async {
@@ -247,7 +257,7 @@ class ReviewPanel extends StatelessWidget {
                     Navigator.pop(context);
                   }
                 },
-          child: const Text('Rechazar: no cambiar nada'),
+          child: const ToneLabel(Icons.close, 'Rechazar: no cambiar nada'),
         ),
         TextButton(
           key: const ValueKey('review-back'),

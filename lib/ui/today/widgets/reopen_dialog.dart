@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../core/tone_buttons.dart';
+
 /// Changing a finished session reopens it. The person confirms first, and the
 /// reopening is recorded in the history.
 Future<bool> confirmReopen(BuildContext context) async =>
@@ -17,8 +19,9 @@ Future<bool> confirmReopen(BuildContext context) async =>
             child: const Text('Cancelar'),
           ),
           FilledButton(
+            style: toneStyle(ActionTone.caution),
             onPressed: () => Navigator.pop(context, true),
-            child: const Text('Reabrir y cambiar'),
+            child: const ToneLabel(Icons.lock_open, 'Reabrir y cambiar'),
           ),
         ],
       ),
@@ -92,10 +95,11 @@ class _SkipReasonDialogState extends State<_SkipReasonDialog> {
         child: const Text('Cancelar'),
       ),
       FilledButton(
+        style: toneStyle(ActionTone.caution),
         onPressed: widget.required && reason.text.trim().isEmpty
             ? null
             : () => Navigator.pop(context, reason.text.trim()),
-        child: const Text('Omitir'),
+        child: const ToneLabel(Icons.skip_next, 'Omitir'),
       ),
     ],
   );

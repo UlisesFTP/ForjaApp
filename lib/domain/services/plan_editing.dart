@@ -12,7 +12,9 @@ PlanVersion cloneForEditing(
   id: newId(),
   status: PlanStatus.draft,
   source: PlanSource.manual,
-  name: source.source == PlanSource.example ? 'Mi plan' : source.name,
+  name: source.source == PlanSource.example || source.source == PlanSource.none
+      ? 'Mi plan'
+      : source.name,
   createdAt: now,
   days: [
     for (final day in source.days)

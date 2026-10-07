@@ -21,9 +21,9 @@ class _Launcher implements TutorialLauncher {
 }
 
 Routine? weekly(DateTime d) => switch (d.weekday) {
-  DateTime.tuesday => examplePlan.routines[0],
-  DateTime.thursday => examplePlan.routines[1],
-  DateTime.saturday => examplePlan.routines[2],
+  DateTime.tuesday => legacyTemplatePlan.routines[0],
+  DateTime.thursday => legacyTemplatePlan.routines[1],
+  DateTime.saturday => legacyTemplatePlan.routines[2],
   _ => null,
 };
 
@@ -113,8 +113,9 @@ void main() {
 
     test('rest days and moved workouts follow the routines of the day', () {
       final moved = plan(
-        routineOn: (d) =>
-            d.day == 2 && d.month == 10 ? examplePlan.routines[0] : weekly(d),
+        routineOn: (d) => d.day == 2 && d.month == 10
+            ? legacyTemplatePlan.routines[0]
+            : weekly(d),
       );
       expect(moved.map((n) => n.id), contains(20261002));
       final none = plan(routineOn: (_) => null);
@@ -124,7 +125,7 @@ void main() {
     test('ids are the date, unique across month and year ends', () {
       final list = plan(
         now: DateTime(2026, 12, 20),
-        routineOn: (d) => examplePlan.routines[0],
+        routineOn: (d) => legacyTemplatePlan.routines[0],
       );
       expect(list.map((n) => n.id).toSet(), hasLength(list.length));
       expect(list.map((n) => n.id), contains(20261231));
@@ -174,7 +175,7 @@ void main() {
         final list = ReminderPlanner.plan(
           settings: const ReminderSettings(enabled: true, hour: 18, minute: 0),
           now: start,
-          routineOn: (d) => examplePlan.routines[0],
+          routineOn: (d) => legacyTemplatePlan.routines[0],
           statusOn: (_) => null,
           zone: 'America/New_York',
         );
@@ -686,6 +687,41 @@ void main() {
       await openSheet(tester);
       expect(tester.takeException(), isNull);
       expect(find.byKey(const ValueKey('open-settings')), findsOneWidget);
+    });
+
+    // Regression (seen on a Redmi set to 12 hours, 2026-10-07): the Spanish
+    // picker shows 24 hours, but typing "08" after 18:00 saved 20:47.
+    testWidgets('typing a morning hour in the picker keeps it in the morning', (
+      tester,
+    ) async {
+      final (d, _) = await start(
+        tester,
+        settings: const ReminderSettings(enabled: true, hour: 18, minute: 0),
+      );
+      await openSheet(tester);
+      await tester.tap(find.text('Hora preferida'));
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.byTooltip('Cambiar al modo de introducción de texto'),
+      );
+      await tester.pumpAndSettle();
+      final fields = find.descendant(
+        of: find.byType(Dialog),
+        matching: find.byType(TextField),
+      );
+      await tester.enterText(fields.at(0), '08');
+      await tester.enterText(fields.at(1), '47');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ACEPTAR'));
+      await tester.pumpAndSettle();
+      expect(find.text('8:47'), findsOneWidget);
+      final save = find.text('Guardar preferencia');
+      await tester.ensureVisible(save);
+      await tester.pumpAndSettle();
+      await tester.tap(save);
+      await tester.pumpAndSettle();
+      expect(d.repository.reminder.hour, 8);
+      expect(d.repository.reminder.minute, 47);
     });
   });
 }

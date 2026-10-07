@@ -115,7 +115,9 @@ class PlanDay {
 
 enum PlanStatus { draft, accepted, rejected }
 
-enum PlanSource { example, generated, manual }
+/// Where a plan came from. `none` is the empty plan of an install that has
+/// not created one yet (D45); it is never stored.
+enum PlanSource { example, generated, manual, none }
 
 /// A weekly plan. Accepted versions are never mutated: changing a plan
 /// creates a new version, so history keeps pointing at what was done.

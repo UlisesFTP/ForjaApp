@@ -68,26 +68,29 @@ void main() {
     expect(exerciseCatalog.first.tutorialUri.path, '/results');
   });
   test('the example plan is 0.1 template: Tuesday, Thursday, Saturday', () {
-    expect(examplePlan.source, PlanSource.example);
-    expect(examplePlan.status, PlanStatus.accepted);
+    expect(legacyTemplatePlan.source, PlanSource.example);
+    expect(legacyTemplatePlan.status, PlanStatus.accepted);
     expect(
-      {for (final d in examplePlan.days) d.weekday: d.routine.id},
+      {for (final d in legacyTemplatePlan.days) d.weekday: d.routine.id},
       {
         DateTime.tuesday: 'legs',
         DateTime.thursday: 'push',
         DateTime.saturday: 'pull',
       },
     );
-    expect(examplePlan.routines.map((r) => r.exerciseIds), [
+    expect(legacyTemplatePlan.routines.map((r) => r.exerciseIds), [
       ['squat', 'rdl', 'press'],
       ['bench', 'shoulder', 'triceps'],
       ['row', 'pulldown', 'curl'],
     ]);
     // Reference weights are the 0.1 examples, never prescriptions.
-    expect(examplePlan.routines.first.exercises.first.referenceWeightKg, 40);
+    expect(
+      legacyTemplatePlan.routines.first.exercises.first.referenceWeightKg,
+      40,
+    );
     expect(
       PlanValidator.validate(
-        examplePlan,
+        legacyTemplatePlan,
         forAcceptance: true,
         isKnown: (id) => !exerciseFor(id).archived,
       ),

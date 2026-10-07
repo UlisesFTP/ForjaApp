@@ -12,7 +12,7 @@ Mantiene diseño existente, no propone rediseño. Actualizado: 2026-09-30.
 | Tinta sobre papel | #111111 |
 | Borde base | #494949 |
 
-Tema canónico: lib/core/theme/forja_theme.dart. Medir pares reales: texto 4.5:1, indicadores 3:1. Estado también con texto/símbolo; errores monocromáticos.
+Tema canónico: lib/core/theme/forja_theme.dart. Medir pares reales: texto 4.5:1, indicadores 3:1. Estado también con texto/símbolo; los errores llevan texto y símbolo, y el rojo se reserva a acciones destructivas (D44).
 
 DM Sans cuerpo/controles, Barlow Condensed títulos; fuentes/OFL locales. Informativo mínimo 14 px, nuevos párrafos suelen usar 16 px, texto al 200% operable.
 
@@ -20,7 +20,7 @@ Radios actuales por rol: inputs 12 / botones 14; mantener geometría de tarjetas
 
 ## Racha (excepción de color)
 
-La llama de racha es el único elemento con color (D36): naranja `#FF9600` con núcleo `#FFC800` sobre fondos oscuros, naranja profundo `#E65100` sobre el papel de la barra superior y gris `#757570` apagada. No usar el naranja en ningún otro control, texto o gráfica salvo el mapa de calor de la racha. La llama parpadea solo un momento y respeta el movimiento reducido.
+La llama de racha es el único elemento con color propio de la marca (D36); además, las acciones clave usan verde `#15803D`, amarillo oscuro `#A16207` y rojo `#DC2626` sólidos, con icono y texto blancos (contraste ≥ 4,5:1), compactos (40 px visibles, zona táctil de 48 px), y hover y foco más oscuros con contorno claro y pulsado aún más oscuro (D44); el color nunca va solo. Llama: naranja `#FF9600` con núcleo `#FFC800` sobre fondos oscuros, naranja profundo `#E65100` sobre el papel de la barra superior y gris `#757570` apagada. No usar el naranja en ningún otro control, texto o gráfica salvo el mapa de calor de la racha. La llama parpadea solo un momento y respeta el movimiento reducido.
 
 ## Navbar y Hoy
 

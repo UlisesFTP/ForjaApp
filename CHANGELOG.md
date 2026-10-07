@@ -1,5 +1,33 @@
 # Cambios
 
+## 2026-10-07 · sin rutina de ejemplo; planes de 1 a 7 días (D45)
+
+- **Una instalación nueva ya no trae rutina:** Hoy y Plan dicen «Aún no tienes un plan» con «Crear mi plan». Saltar el perfil ya no da un plan de ejemplo. Quien ya entrenó con la plantilla antigua la conserva solo en esos días pasados.
+- **Planes de 1 a 7 días** (antes exactamente tres): el editor añade y quita días. El generador sigue proponiendo tres.
+- Nuevo ejercicio: **Remo con apoyo en el pecho**.
+- Plan sin empezar: Plan muestra cuándo empieza y Hoy el siguiente entrenamiento.
+- Pruebas: 895 → 904.
+
+## 2026-10-07 · recordatorios verificados en segundo plano (F11)
+
+- **Corregido:** en un teléfono con formato de 12 horas, escribir «08» en «Hora preferida» guardaba 20:00 si la hora anterior era de tarde (el selector se ve en 24 horas). Ahora se interpreta como se ve.
+- Verificado en el teléfono: el aviso llega con la app cerrada, sobrevive a una actualización sin abrirla y al tocarlo abre el día.
+
+## 2026-10-07 · botones con icono y color de acción (D44)
+
+- **Colores de acción** en los botones clave, siempre con icono y texto (el color nunca va solo): **verde** para confirmar (completar sesión, guardar serie/alimento/receta/objetivos/check-in, aceptar aumento o plan, aceptar y activar, guardar clave, iniciar cardio), **amarillo** para precaución (omitir serie o ejercicio, «ahora no», posponer, rechazar, salir sin guardar, «No terminé» y «Falté») y **rojo** para destructivas (eliminar clave, borrar todo y todos mis datos, reemplazar mis datos, eliminar receta, descartar borrador o sesión de cardio y las papeleras). Botones **compactos** (40 px visibles, zona táctil de 48 px) de **color sólido** con icono y texto **blancos**: verde `#15803D`, amarillo oscuro `#A16207` (el texto blanco no se lee sobre un amarillo brillante) y rojo `#DC2626`, iguales en tarjetas oscuras y claras.
+- **Hover, foco y pulsado:** el relleno se oscurece al pasar el ratón o enfocar con teclado, con un contorno claro (más grueso con el foco), y más al pulsar; cursor de mano. Los botones sin color también reaccionan (tema). En el teléfono no hay hover: se nota el pulsado y el foco.
+- Los demás botones (Cancelar, Atrás, Por qué, Probar conexión, exportar…) siguen en blanco y negro. Claves, etiquetas y tipos de botón no cambian.
+- Pruebas: 870 → 894. Contraste medido: texto blanco ≥ 4,5:1 sobre el relleno en reposo, hover, foco y pulsado, y relleno ≥ 3:1 frente al fondo, las tarjetas y el papel. «Omitir serie» comparte la fila con «Guardar serie» para que el texto grande no desborde.
+
+## 2026-10-07 · ajustes del asistente IA más accesibles y con más proveedores (F17)
+
+- **Pantalla del asistente rehecha:** el estado y el interruptor arriba con una frase que dice el siguiente paso; después, «Paso 1 · Proveedor y modelo», «Paso 2 · Tu clave» y «Paso 3 · Probar la conexión». Funciones, datos que puede consultar, tope diario y dirección quedan en «Más opciones». Cada error aparece justo debajo de la acción que lo causó, y «Probar conexión» dice por qué está desactivado.
+- **Menús de proveedor y modelo:** filas grandes que abren una lista de opciones con nombre, descripción y una nota («Rápido y barato · recomendado»); «Otro modelo…» deja escribir cualquier identificador. Elegir otro modelo no pide volver a consentir; otro proveedor o dirección, sí.
+- **Más proveedores:** OpenCode Go (por defecto), OpenCode Zen, OpenAI, Google Gemini, DeepSeek, Mistral, Groq, OpenRouter, Xiaomi MiMo y «Otro (compatible con OpenAI)». Cada uno trae su dirección, sus modelos populares, dónde conseguir la clave y lo que dice sobre alojamiento y retención (los niveles gratuitos que pueden entrenar con tus datos se avisan). Los modelos «-free» y «:free» siguen rechazados.
+- El cliente adapta la petición al proveedor: `max_tokens` o `max_completion_tokens` según el que lo pida, sin `temperature` en OpenAI, y la cabecera de sesión solo en OpenCode.
+- Pruebas: 858 → 870. Corregidos dos fallos vistos en el teléfono: la fila de Más decía «Desactivado» tras un arranque en frío y «Describir comida (IA)» fallaba con OpenCode por no enviar una sesión. Los identificadores de modelo se tomaron de las listas públicas de OpenCode y OpenRouter; no se probaron con una clave de cada proveedor.
+
 ## 2026-10-02 · asistente IA opcional con herramientas internas (F17)
 
 - **Asistente IA opcional** (Más → Asistente IA), desactivado por defecto y con **tu propia clave**: OpenCode Go con `mimo-v2.6-flash` por defecto, la API directa de Xiaomi MiMo o cualquier proveedor compatible con OpenAI por `https`. La clave solo se guarda en el almacenamiento seguro del teléfono. Antes de activarlo, un consentimiento explica a quién se envía, qué puede consultar (con un interruptor por categoría) y el riesgo de usar Go fuera de la programación.

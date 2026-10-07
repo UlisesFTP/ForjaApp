@@ -1,4 +1,5 @@
 import '../../../core/date_utils.dart';
+import '../../../core/ids.dart';
 import '../../../domain/models/models.dart';
 import '../../../domain/repositories/repositories.dart';
 import '../../../domain/services/exercise_library.dart';
@@ -14,7 +15,9 @@ class PlanEditorViewModel extends ViewModel {
     this._catalog,
     this._profiles, {
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now {
+    IdGenerator? newId,
+  }) : _clock = clock ?? DateTime.now,
+       _newId = newId ?? randomId {
     final stored = _plans.draft;
     if (stored == null) {
       throw StateError('Create a draft before editing it.');
@@ -27,6 +30,7 @@ class PlanEditorViewModel extends ViewModel {
   final ExerciseRepository _catalog;
   final ProfileRepository _profiles;
   final DateTime Function() _clock;
+  final IdGenerator _newId;
   late PlanVersion _saved;
   late PlanVersion working;
 
@@ -66,6 +70,38 @@ class PlanEditorViewModel extends ViewModel {
   }
 
   void renamePlan(String name) => _set(working.copyWith(name: name));
+
+  /// Adds an empty training day on the first free weekday; false when the
+  /// week is full. Days stay in weekday order.
+  bool addDay() {
+    final used = {for (final d in working.days) d.weekday};
+    int? free;
+    for (var d = DateTime.monday; d <= DateTime.sunday; d++) {
+      if (!used.contains(d)) {
+        free = d;
+        break;
+      }
+    }
+    if (free == null) return false;
+    final routine = Routine(
+      id: _newId(),
+      name: 'Día ${working.days.length + 1}',
+      focus: '',
+      warmup: '',
+      exercises: const [],
+    );
+    _set(
+      working.copyWith(
+        days: [...working.days, PlanDay(free, routine)]
+          ..sort((a, b) => a.weekday.compareTo(b.weekday)),
+      ),
+    );
+    return true;
+  }
+
+  /// Removes the training day at [day] with its routine.
+  void removeDay(int day) =>
+      _set(working.copyWith(days: [...working.days]..removeAt(day)));
 
   PlanVersion _withRoutine(int day, Routine Function(Routine) change) =>
       working.copyWith(

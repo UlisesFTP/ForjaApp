@@ -5,6 +5,7 @@ import '../../../domain/models/models.dart';
 import '../../core/widgets.dart';
 import '../view_models/nutrition_view_model.dart';
 import 'food_form.dart' show parseOptional;
+import '../../core/tone_buttons.dart';
 
 Future<void> showGoals(BuildContext context, NutritionViewModel vm) =>
     showForjaSheet<void>(context, title: 'Objetivos', child: _GoalsForm(vm));
@@ -115,8 +116,12 @@ class _GoalsFormState extends State<_GoalsForm> {
           const SizedBox(height: 8),
           FilledButton(
             key: const ValueKey('goals-save'),
+            style: toneStyle(ActionTone.confirm),
             onPressed: widget.vm.busy ? null : _save,
-            child: Text(widget.vm.busy ? 'Guardando…' : 'Guardar objetivos'),
+            child: ToneLabel(
+              Icons.save_outlined,
+              widget.vm.busy ? 'Guardando…' : 'Guardar objetivos',
+            ),
           ),
           if (widget.vm.error != null)
             Semantics(liveRegion: true, child: Text(widget.vm.error!)),

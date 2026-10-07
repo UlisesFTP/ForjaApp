@@ -121,13 +121,22 @@ class TodayViewModel extends ViewModel {
     );
   }
 
-  String get nextRoutine {
+  /// The next training day within two weeks, or null when none is planned.
+  String? get nextRoutine {
     for (var i = 1; i <= 14; i++) {
       final date = nextDay(selectedDate, i), next = routineOn(date);
       if (next != null) return '${friendlyDate(date)} · ${next.name}';
     }
-    return 'Por definir';
+    return null;
   }
+
+  /// No plan applies on the selected day and none starts within two weeks
+  /// (D45: a new install starts without a plan).
+  bool get withoutPlan =>
+      routine == null &&
+      session == null &&
+      nextRoutine == null &&
+      _workouts.planFor(selectedDate).source == PlanSource.none;
 
   /// A move that brought this day's workout here / took it away, while it
   /// still stands.

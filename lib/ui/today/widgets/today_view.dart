@@ -15,6 +15,7 @@ import 'check_in_sheet.dart';
 import 'reopen_dialog.dart';
 import 'reschedule_sheet.dart';
 import 'sets_sheet.dart';
+import '../../core/tone_buttons.dart';
 
 class TodayView extends StatelessWidget {
   const TodayView({
@@ -25,11 +26,15 @@ class TodayView extends StatelessWidget {
     required this.onProgress,
     required this.onCoach,
     required this.onCardio,
+    this.onPlan,
   });
   final TodayViewModel vm;
   final ProgressionViewModel progression;
   final TutorialLauncher launcher;
   final VoidCallback onProgress, onCoach, onCardio;
+
+  /// Opens Plan, to create one when there is none (D45).
+  final VoidCallback? onPlan;
   @override
   Widget build(BuildContext context) => VmObserver(
     viewModel: vm,
@@ -53,7 +58,10 @@ class TodayView extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [_rest(context), ..._after(context)],
+                  children: [
+                    vm.withoutPlan ? _noPlan(context) : _rest(context),
+                    ..._after(context),
+                  ],
                 ),
               ),
             ],
@@ -272,10 +280,12 @@ class TodayView extends StatelessWidget {
         Expanded(
           child: FilledButton(
             key: const ValueKey('finish-session'),
+            style: toneStyle(ActionTone.confirm),
             onPressed: vm.busy || !vm.allResolved || vm.finished
                 ? null
                 : () => vm.finish(SessionStatus.completed),
-            child: Text(
+            child: ToneLabel(
+              vm.finished ? Icons.task_alt : Icons.check_circle_outline,
               vm.session?.status == SessionStatus.completed
                   ? 'Sesión completada'
                   : vm.finished
@@ -297,15 +307,30 @@ class TodayView extends StatelessWidget {
             if (vm.finished)
               const PopupMenuItem(
                 value: 'reopen',
-                child: Text('Reabrir sesión'),
+                child: ToneLabel(
+                  Icons.lock_open,
+                  'Reabrir sesión',
+                  iconColor: ForjaColors.text,
+                ),
               )
             else ...[
               if (vm.hasPending)
                 const PopupMenuItem(
                   value: 'partial',
-                  child: Text('No terminé'),
+                  child: ToneLabel(
+                    Icons.hourglass_bottom,
+                    'No terminé',
+                    iconColor: ForjaColors.caution,
+                  ),
                 ),
-              const PopupMenuItem(value: 'missed', child: Text('Falté')),
+              const PopupMenuItem(
+                value: 'missed',
+                child: ToneLabel(
+                  Icons.event_busy,
+                  'Falté',
+                  iconColor: ForjaColors.caution,
+                ),
+              ),
             ],
           ],
         ),
@@ -349,6 +374,43 @@ class TodayView extends StatelessWidget {
     ),
   ];
 
+  Widget _noPlan(BuildContext context) => SurfaceCard(
+    key: const ValueKey('today-no-plan'),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const Icon(Icons.event_note_outlined, size: 32),
+        const SizedBox(height: 10),
+        Text(
+          'Aún no tienes un plan',
+          style: Theme.of(context).textTheme.headlineMedium,
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Crea tu rutina con tus días y tus ejercicios, o genérala desde tu '
+          'perfil en Plan. Mientras tanto puedes registrar cardio.',
+          textAlign: TextAlign.center,
+        ),
+        if (onPlan != null) ...[
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            key: const ValueKey('today-create-plan'),
+            onPressed: onPlan,
+            icon: const Icon(Icons.add),
+            label: const Text('Crear mi plan'),
+          ),
+        ],
+        const SizedBox(height: 10),
+        OutlinedButton.icon(
+          onPressed: onCardio,
+          icon: const Icon(Icons.timer_outlined),
+          label: const Text('Abrir cardio'),
+        ),
+      ],
+    ),
+  );
+
   Widget _rest(BuildContext context) => SurfaceCard(
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -366,7 +428,10 @@ class TodayView extends StatelessWidget {
           Text(
             'Sesión anterior: ${sessionLabels[vm.session!.status]}. Los pendientes se reprogramaron.',
           ),
-        Text('Siguiente: ${vm.nextRoutine}', textAlign: TextAlign.center),
+        Text(
+          'Siguiente: ${vm.nextRoutine ?? 'por definir'}',
+          textAlign: TextAlign.center,
+        ),
         if (vm.canUndo(vm.moveFrom)) ...[
           const SizedBox(height: 8),
           TextButton(

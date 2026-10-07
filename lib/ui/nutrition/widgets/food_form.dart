@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../../../domain/models/models.dart';
 import '../../core/widgets.dart';
 import '../view_models/nutrition_view_model.dart';
+import '../../core/tone_buttons.dart';
 
 /// Parses a typed number (comma or dot). Empty is null (unknown); anything
 /// else that is not a finite number is an error.
@@ -336,8 +337,12 @@ class _FoodFormState extends State<FoodForm> {
           const SizedBox(height: 8),
           FilledButton(
             key: const ValueKey('food-save'),
+            style: toneStyle(ActionTone.confirm),
             onPressed: widget.vm.busy ? null : _save,
-            child: Text(widget.vm.busy ? 'Guardando…' : 'Guardar'),
+            child: ToneLabel(
+              Icons.save_outlined,
+              widget.vm.busy ? 'Guardando…' : 'Guardar',
+            ),
           ),
           if (widget.vm.error != null)
             Semantics(liveRegion: true, child: Text(widget.vm.error!)),

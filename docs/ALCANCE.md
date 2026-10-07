@@ -1,6 +1,6 @@
 # Alcance de la entrega
 
-FORJA es un organizador móvil de rutinas de gimnasio, sin login y con identidad monocromática principalmente oscura. Flutter, arquitectura MVVM y datos locales en SQLite. Estado a **2026-10-01** (versión `0.9.0+2`): las fases P0–P7 están implementadas y verificadas en host y, donde se indica, en un Android real. **iOS no se ha compilado ni probado** (no hay macOS), por lo que ningún requisito está cerrado. Detalle por requisito en [IMPLEMENTACION](IMPLEMENTACION.md) y evidencia en [VALIDACION](VALIDACION.md).
+FORJA es un organizador móvil de rutinas de gimnasio, sin login y con identidad monocromática principalmente oscura (la llama de racha y los botones de acciones clave tienen color). Flutter, arquitectura MVVM y datos locales en SQLite. Estado a **2026-10-01** (versión `0.9.0+2`): las fases P0–P7 están implementadas y verificadas en host y, donde se indica, en un Android real. **iOS no se ha compilado ni probado** (no hay macOS), por lo que ningún requisito está cerrado. Detalle por requisito en [IMPLEMENTACION](IMPLEMENTACION.md) y evidencia en [VALIDACION](VALIDACION.md).
 
 ## Incluido
 
@@ -8,8 +8,8 @@ FORJA es un organizador móvil de rutinas de gimnasio, sin login y con identidad
 - **Series reales** (panel por ejercicio): calentamiento y trabajo, carga, repeticiones y RIR opcionales (vacío = «sin registrar», nunca 0), omitir serie o ejercicio con motivo, técnica autoevaluada, descanso opcional por marcas de hora. Completar una sesión exige resolver todo; con omitidos queda parcial. Editar una sesión terminada pide confirmar y deja rastro.
 - **Check-in** antes y después; propuesta de sesión más ligera reversible (solo afecta a lo pendiente); una lesión pausa y no ofrece ajustes ni aumentos.
 - **Ausencia y sesión incompleta** con vista previa, fecha propuesta (o elegida), aviso de días seguidos, guardar sin mover y deshacer mientras el destino no empiece.
-- **Plan** versionado: onboarding, generador local determinista, editor, borrador → aceptar con vigencia (sin tocar sesiones pasadas), plan de ejemplo identificado.
-- **Biblioteca** de 39 ejercicios con filtros, alternativas y tutorial como búsqueda identificada.
+- **Plan** versionado: onboarding, generador local determinista, editor, borrador → aceptar con vigencia (sin tocar sesiones pasadas), planes de 1 a 7 días; sin plan ni rutina de ejemplo al instalar (D45).
+- **Biblioteca** de 40 ejercicios con filtros, alternativas y tutorial como búsqueda identificada.
 - **Progreso**: cumplimiento con numerador, denominador y política visibles; volumen externo real con cobertura; evolución y marcas observadas con gráfica monocroma y tabla equivalente; historial con series; sugerencias de progresión por ejercicio (reglas `prog-v1`) que nunca se aplican solas.
 - **Racha de entrenos** con llama naranja animada en la barra superior, calendario mensual y mapa de calor anual con tabla equivalente (reglas `streak-v1`: cuenta días de entrenamiento del plan; descansos y faltas reprogramadas no la rompen).
 - **Minicoach**: revisión mensual cada 30 días (posponer 7), propuesta explicada con comparación de planes, aceptar o rechazar (reglas `review-v1`). Reglas locales y explicables; no es un diagnóstico ni una IA remota.

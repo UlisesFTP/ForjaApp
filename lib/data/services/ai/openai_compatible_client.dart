@@ -42,8 +42,8 @@ class OpenAiCompatibleClient implements AiChatClient {
     return {
       'model': endpoint.model,
       'messages': [for (final m in request.messages) _message(m)],
-      'max_completion_tokens': request.maxTokens,
-      'temperature': request.temperature,
+      endpoint.preset.tokenParam: request.maxTokens,
+      if (endpoint.preset.sendTemperature) 'temperature': request.temperature,
       'stream': false,
       if (request.tools.isNotEmpty) ...{
         'tools': [

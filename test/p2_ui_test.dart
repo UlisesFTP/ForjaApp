@@ -71,6 +71,18 @@ void main() {
   // Scrolls so that some match can actually be tapped. Text also appears in
   // pages behind a modal sheet, so the first match is not always the right one.
   Future<void> reveal(WidgetTester tester, Finder target) async {
+    if (target.evaluate().isEmpty) {
+      // Not built yet: scroll the top page until it is.
+      await tester.scrollUntilVisible(
+        target,
+        300,
+        scrollable: find
+            .byWidgetPredicate(
+              (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+            )
+            .last,
+      );
+    }
     final matches = target.evaluate().length;
     for (var m = 0; m < matches; m++) {
       await tester.ensureVisible(target.at(m));
@@ -174,9 +186,8 @@ void main() {
         expect(find.text('Borrador pendiente'), findsOneWidget);
       },
     );
-    testWidgets('can be skipped for the example plan, and says so', (
-      tester,
-    ) async {
+    // D45: skipping no longer gives a plan; it says how to create one.
+    testWidgets('can be skipped without a plan, and says so', (tester) async {
       final d = await start(tester, onboarding: true);
       expect(
         find.textContaining('No se pide ningún permiso del teléfono'),
@@ -192,7 +203,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Completa tu perfil'), findsOneWidget);
       expect(
-        find.textContaining('Estás usando el plan de ejemplo'),
+        find.textContaining('Aún no completaste tu perfil'),
         findsOneWidget,
       );
     });

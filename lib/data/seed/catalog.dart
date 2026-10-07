@@ -2,7 +2,7 @@ import '../../domain/models/models.dart';
 
 /// Version of the built-in exercise texts and prescriptions. Content is
 /// original to FORJA; no tutorial link is bundled until one is verified.
-const catalogVersion = '2026.10-1';
+const catalogVersion = '2026.10-2';
 
 const exerciseCatalog = <Exercise>[
   // ── Piernas ───────────────────────────────────────────────────────────
@@ -464,6 +464,24 @@ const exerciseCatalog = <Exercise>[
     tip: 'Evita impulsarte con la zona lumbar.',
   ),
   Exercise(
+    id: 'chestrow',
+    name: 'Remo con apoyo en el pecho',
+    group: 'Espalda',
+    muscles: 'Espalda media',
+    equipment: Equipment.machine,
+    pattern: MovementPattern.horizontalPull,
+    sets: 3,
+    repsMin: 8,
+    repsMax: 12,
+    rir: 2,
+    restSeconds: 90,
+    incrementKg: 5,
+    defaultWeight: 30,
+    description: 'Apoya el pecho en el respaldo de la máquina o del banco inclinado. Tira de los agarres llevando los codos atrás y vuelve con control.',
+    warmup: 'Movilidad escapular y 1 serie con carga ligera.',
+    tip: 'Mantén el pecho pegado al apoyo: así no tiras con la zona lumbar.',
+  ),
+  Exercise(
     id: 'pulldown',
     name: 'Jalón al pecho',
     group: 'Espalda',
@@ -731,10 +749,24 @@ Exercise exerciseFor(String id) {
 
 PlanExercise _planned(String id) => PlanExercise.fromExercise(exerciseFor(id));
 
-/// The plan every install starts with (0.1's fixed template). It lives in
-/// code, never in the database, and applies from the beginning of time until
-/// the user accepts a plan of their own.
-final examplePlan = PlanVersion(
+/// What applies before the person has a plan of their own: nothing (D45).
+/// A new install starts empty; it lives in code, never in the database.
+final noPlan = PlanVersion(
+  id: 'plan-none',
+  status: PlanStatus.accepted,
+  source: PlanSource.none,
+  name: 'Sin plan',
+  effectiveFrom: '0001-01-01',
+  createdAt: DateTime.utc(2026, 10, 7),
+  acceptedAt: DateTime.utc(2026, 10, 7),
+  days: const [],
+);
+
+/// 0.1's fixed three-day template. New installs no longer start with it
+/// (D45): it only keeps rendering the history of installs that trained with
+/// it (sessions or moves that point at its routines) and lets 0.1 data be
+/// imported. It lives in code, never in the database.
+final legacyTemplatePlan = PlanVersion(
   id: 'plan-example',
   status: PlanStatus.accepted,
   source: PlanSource.example,

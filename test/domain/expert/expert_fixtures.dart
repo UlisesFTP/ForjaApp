@@ -71,7 +71,7 @@ CoachInputs coachInputs({
   List<Reschedule> reschedules = const [],
   Routine? Function(DateTime)? routineOn,
 }) {
-  final p = plan ?? examplePlan;
+  final p = plan ?? legacyTemplatePlan;
   return CoachInputs(
     today: today ?? monday,
     profile: profile,
@@ -94,7 +94,7 @@ CoachInputs coachInputs({
 
 /// The example plan's routines under another source (a plan of one's own).
 PlanVersion examplePlanCopy(PlanSource source) =>
-    examplePlan.copyWith(source: source);
+    legacyTemplatePlan.copyWith(source: source);
 
 String daysBefore(DateTime day, int n) => dateKey(nextDay(day, -n));
 

@@ -44,6 +44,22 @@ class PlanViewModel extends ViewModel {
   PlanVersion get activePlan => _plans.planFor(today);
   PlanVersion? get draft => _plans.draft;
 
+  /// No plan applies today (D45).
+  bool get noPlanToday => activePlan.source == PlanSource.none;
+
+  /// The next accepted version that has not started yet, if any.
+  PlanVersion? get upcoming {
+    final key = dateKey(today);
+    PlanVersion? next;
+    for (final p in _plans.plans) {
+      final from = p.effectiveFrom;
+      if (p.status != PlanStatus.accepted || from == null) continue;
+      if (from.compareTo(key) <= 0) continue;
+      if (next == null || from.compareTo(next.effectiveFrom!) < 0) next = p;
+    }
+    return next;
+  }
+
   /// Accepted versions, newest first, including the built-in example only
   /// while no plan of the user's own applies.
   List<PlanVersion> get versions => [
@@ -54,8 +70,10 @@ class PlanViewModel extends ViewModel {
   /// A draft to edit: the pending one, or a copy of the plan in use.
   Future<bool> startEditing() => run(() async {
     if (_plans.draft != null) return;
+    // Without a plan today, start from the one that is about to begin.
+    final base = noPlanToday ? upcoming ?? activePlan : activePlan;
     await _plans.saveDraft(
-      cloneForEditing(activePlan, now: _clock().toUtc(), newId: _newId),
+      cloneForEditing(base, now: _clock().toUtc(), newId: _newId),
     );
   });
 

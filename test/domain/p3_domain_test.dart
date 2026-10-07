@@ -119,7 +119,7 @@ void main() {
   });
 
   group('the lighter session', () {
-    final planned = examplePlan.routines.first.exercises.first;
+    final planned = legacyTemplatePlan.routines.first.exercises.first;
     final exercise = exerciseFor(planned.exerciseId);
     const normal = UserProfile();
 
